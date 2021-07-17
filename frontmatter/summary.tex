@@ -6,10 +6,18 @@
 \addcontentsline{toc}{section}{Abstract}
 \section*{Abstract}
 
-The growth of the Internet of Things (IoT) will challenge our existing approaches of storing, processing, and presenting data substantially.
+The growth of cloud computing and big data has lead to increased use of computing clusters to process large datasets. Particularly in the sciences this has become an enormous advantage for analysis and research and it has become common for scientists to break down their computing needs into a sequence of smaller tasks, a so called workflow. These workflows can then be run on computer clusters and cloud computing platforms. One of the most pertinent fields for this is Bioinformatics.  
+Another result of the rise of cloud computing is that there has also been a paradigm shift towards designing programs to be as best suited as possible for cluster environments and this has also led to a shift towards containerization due to the inherent advantage of their 'write once, deploy anywhere' philosophy for such clusters. The result of this combination of factors is the increased popularity of scientific workflows and the frameworks or scripting languages which can be used to make such workflows scalable and reproducible, through containerization, and prepare them for deployment to various cloud computing platforms and management softwares (e.g. Kubernetes, AWS etc.). Nextflow is one such bioinformatics worfklow manager. It includes both a domain specific language to compose tasks into protable worfklows as well as the workflow management softtware for deployment to the various different execution platforms with which it is compatible.    
 
-\newpage
-\addcontentsline{toc}{section}{Zusammenfassung}
-\section*{Zusammenfassung}
+Since workflows are composed of segregated inter-dependent tasks which can run in their own containers, the individual tasks which make up a workflow can be assigned differing computational resources and doing so can speed up the entire process and/or make it more efficient. This is naturally of particular interest to the scientists running these workflows since it will either lower the costs or speed up the process or both. This thesis aims to investigate the allocation of resources to individual tasks and specifically how reinforcement learning can be applied to improve the allocation to be as optimal as possible. Since the tasks within these scientific workflows will reoccur quite often the use of an algorithm which learns "on the go" presents a potential for near optimal resource allocation in the long run. The implementation will be integrated into the nextflow source code.
 
-Der Aufstieg des Internet of Things (IoT) stellt uns vor neue Herausforderungen bezueglich der Speicherung, Verarbeitung und Darstellung von Daten.
+Differing approaches and reinforcement learning algorithms will be compared and their performance will be judged firstly by how they minimize runtime and secondly by their maximization of resource usage. The primary approach will use a simple gradient bandit and may be compared to other approaches such as TD-learning.
+
+Should such an algorithm prove useful and provide an improvement in resource usage it would naturally indicate this is an area which should be explored further and that the use of these methods will help make scientific workflows more efficient. This would be helpful to both the scientists which use workflow managers as well as the administrators of the execution platforms on which such workflow managers will run.
+
+
+%\newpage
+%\addcontentsline{toc}{section}{Zusammenfassung}
+%\section*{Zusammenfassung}
+
+%Der Aufstieg des Internet of Things (IoT) stellt uns vor neue Herausforderungen bezueglich der Speicherung, Verarbeitung und Darstellung von Daten.
