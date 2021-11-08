@@ -4,14 +4,22 @@
 \chapter{Introduction}
 \label{cha:introduction}
 
-This chapter gives a general introduction into the content of and the motivation for this thesis. This is done by initially outlining the motivation and problem in section \ref{sec:motivation}, defining the goal in section \ref{sec:goal}, and explaining the structure of the thesis in section \ref{sec:structure}.
+This chapter gives a general introduction to the content of and the motivation for this thesis. This is done by initially outlining the motivation and problem in section \ref{sec:motivation}, defining the goal in section \ref{sec:goal}, and explaining the structure of the rest of thesis in section \ref{sec:structure}.
 
 %%=========================================
 \section{Motivation \& Problem Description}
 \label{sec:motivation}
 
-Thus, many executives feel fear to become unconscious \cite{TheInquisitiveMind}.
-Also, I want to buy \signal{smart home devices} such as the ones listed in table \ref{tab:scenario1_sensor}.
+%Thus, many executives feel fear to become unconscious \cite{TheInquisitiveMind}.
+%Also, I want to buy \signal{smart home devices} such as the ones listed in table \ref{tab:scenario1_sensor}.
+
+The rising popularity of scientific workflows and the enormity of the aggregate resource requirements of their constituent tasks \cite{ResourceProvisioning} presents an opportunity to try and fine tune the resources requested and allocated by these tasks in order to achieve better performance. Since a scientific workflow is composed of many tasks which each have unique relationships between the resources they require, their input, and how it affects their performance, it becomes cumbersome or even futile to try and pick the right resource allocation for each individual task. Furthermore as the tasks themselves or their order in a workflow might change over time it is also difficult to adapt to this. In addition to this it also quite common that the users may not have the requisite knowledge to properly size the tasks themselves or may make a poor estimation \cite{Predictability} of what a task's resource requirements may be. And finally it must also be considered that for a given use case the exact topology of the deployment scenario (i.e. whether it is being run on an individual computer, a university cluster or  in a cloud computing set-up) and the computational infrastructure being used will also influence the performance of the workflow and its constituent tasks.  When one considers all of these factors it becomes clear that fine tuning the resources for each of the tasks within such workflows "by hand" is both very complex and very difficult. 
+
+However it is also obvious that sizing tasks properly is of critical importance. Not only are greater efficiency or greater speed always desirable for any situation but specifically for large scale, distributed computations it can make a significant difference because the resources being requested are so large that even small improvements in efficiency represent a large amount of reclaimed resources which could be allocated to other users or could reduce costs (in a scenario where computational resources are paid for). 
+
+Thus this presents a scenario in which although better task sizing is beneficial for everyone it is not a problem with a simple solution.
+
+At this point it becomes quite reasonable to begin to consider whether machine learning could provide a solution. There are many different methods which could be tried out, however reinforcement learning presents two distinct advantages. Firstly it does not need to be trained with data from good allocations in the past: since agents using reinforcement learning 'learn on the go' by trying to discover the optimal policy for their goal through interaction with the environment and the problem. This is important because the problem of verifying a given resource allocation is optimal is exactly as hard as finding an optimal allocation, so gathering training data for any form of machine learning which depends on that is ruled out. Secondly, reinforcement learning is adaptable: since it only ever aims to learn an optimal policy though interactions a reinforcement learning agent is constantly gathering feedback on its actions (even once they have reached a point which could be considered 'optimal') and constantly trying to refine its approach to be as perfect as possible. Therefore if the environment or the problem changes and the old policy is no longer the best one, the agent will notice this and adjust its approach and learn a new policy to achieve its goal. Within the context of scientific workflows this is desirable because the tasks and the profile of the input data may change (over time or at once) and render the previous allocations of resources for the given task completely wrong. Indeed the entire system to which the workflow is deployed could change, for example migrating to new infrastructure or a different cloud computing provider. In all of these scenarios the way that resources are allocated to tasks would probably need to be adjusted and reinforcement learning is an approach which would be able to handle these changes and adapt to them.
 
 %\LTXtable{\textwidth}{tab/scenario1_sensor}
 
@@ -19,16 +27,10 @@ Also, I want to buy \signal{smart home devices} such as the ones listed in table
 \section{Goal of the Thesis}
 \label{sec:goal}
 
-The goal of this thesis is to XXXXX. The contributions are:
-
-\begin{cEnum}
-    \item Analysis ...
-    \item Design ...
-    \item Prototypical implementation of the design.
-\end{cEnum}
+The goal of this thesis is to use reinforcement learning to improve the efficiency of scientific workflows by more accurately assigning resources to the individual tasks within the workflows. Specifically the CPU and memory usage will be examined using two different approaches: Gradient Bandits and Q-Learning, and compared to the performance when using the task's initial or default configurations.
 
 %%=========================================
 \section{Structure of the Thesis}
 \label{sec:structure}
 
-The remainder of the thesis is structured as follows ... .
+The remainder of the thesis is structured as follows: first in \ref{cha:background} some background information is given about the ideas and technologies relevant to this paper, then in \ref{cha:related_work} some related works are discussed which addressed similar topics. After that the approach to the problem is described in \ref{cha:approach} and finally in \ref{cha:evaluation} the results are presented and analysed.

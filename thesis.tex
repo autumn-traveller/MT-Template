@@ -11,7 +11,7 @@
 
 \usepackage[
     citestyle=numeric-comp,
-    backend=biber,
+    backend=bibtex,
     bibencoding=inputenc
     ]{biblatex}
 \addbibresource{refs.bib}
@@ -166,6 +166,9 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 \include{mainmatter/01_introduction}
 \include{mainmatter/03_background}
 \include{mainmatter/02_related_work}
+\include{mainmatter/04_approach}
+\include{mainmatter/05_implementation}
+\include{mainmatter/06_evaluation}
 % Include more chapters as required.
 
 %%=========================================
@@ -180,10 +183,11 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 
 \cleardoublepage
 \addcontentsline{toc}{chapter}{Bibliography}
-\defbibheading{notonline}{\chapter*{Bibliography}}
-\printbibliography[heading=notonline, nottype=online]
-\defbibheading{online}{\chapter*{Bibliography (Online)}}
-\printbibliography[heading=online, type=online]
+\printbibliography[heading=bibliography]
+%\defbibheading{notonline}{\chapter*{Bibliography}}
+%\printbibliography[heading=notonline, nottype=online]
+%\defbibheading{online}{\chapter*{Bibliography (Online)}}
+%\printbibliography[heading=online, type=online]
 
 %%=============================================
 
