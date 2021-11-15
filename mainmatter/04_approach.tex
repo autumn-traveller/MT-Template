@@ -107,8 +107,8 @@ Initialise $Q(s,a) = 0$\\
 Initialise start state $s$\\
 \While{\textbf{True}}{
         \eIf{$random < \epsilon$}{choose random action $a$}{choose action $a = max_a (Q(s,a))$}
-        Take action $a$, receive reward $r$, transition to state $s$\\
-        Update $Q(s,a) = Q(s,a) + \alpha \times (r + \gamma \times max_{\hat{a}}(Q(\hat{s},\hat{a})) - Q(s,a) )$\\
+        Take action $a$, receive reward $r$, transition to state $\hat{s}$\\
+        Update $Q_{new}(s,a) = Q(s,a) + \alpha \times (r + \gamma \times max_{\hat{a}}(Q(\hat{s},\hat{a})) - Q(s,a) )$\\
 }
 \caption{Q-learning Agent Pseudocode}
 \label{alg:q-learning}
@@ -128,10 +128,12 @@ The Q-learning agent also has 3 other parameters- the step size $\alpha$, epsilo
 \section{Testing the Agents}
 \label{sec:testing}
 
-In order to evaluate the performance of these agents they were tested on a 34-core, 128GB RAM machine against 5 different workflows. Each workflow is run 10 times without any reinforcement learning agents active. This was done to have something to compare the results to later but also so that there was historical data about the average time each of tasks take since the reinforcement learning agents need this. After that the agents are tested. The gradient bandit is run 50 times for each workflow and the Q-learning agents 100 times. The inputs for the workflows used are based on custom combinations of different input files from each workflow’s full example datasets and their dummy datasets which run very quickyl and are normally used for testing the basic functionality of their workflows. The combinations are designed to strike a balance between having large input data and realistic task configurations but also being short enough that it is feasible to run the workflows hundreds of times. 
+In order to evaluate the performance of these agents they were tested on a 34-core, 128GB RAM machine against 5 different workflows. Each workflow is run 10 times without any reinforcement learning agents active. This was done to have something to compare the results to later but also so that there was historical data about the average time each of the tasks take since the reinforcement learning agents need this information. After that the agents are tested. The gradient bandits are run 50 times for each workflow and the Q-learning agents 100 times.
+
+The input data used for the workflows is based on custom combinations of different input files provided by the workflow's maintainers- there are the full example datasets and the short example datasets. The combinations are designed to strike a balance between having large input data and realistic task configurations but also being short enough that it is feasible to run the workflows hundreds of times. For reference, the full datasets will often take 6 hours or more to run once whereas the short examples never take more than 5 minutes. 
 
 The nextflow source code inherently keeps track of the total number of resources available and the resources already assigned to tasks and it will not schedule more resources than the system has. The tasks are all run inside of docker containers with exactly number of CPUs and memory requested by the task. 
 
-
+For the final comparison in the evaluation chapter the 10 runs without the agents were compared to the last 10 runs with each of the agents.
 
 
