@@ -35,15 +35,15 @@ This is particularly useful for scientific workflows because by using containers
 \section{Scientific Workflows}
 \label{sec:workflows}
 
-With the increased use of simulations and digital sensors the importance of digital data in the sciences continues to rise\cite{ScientificWorkflows}. In addition to this, the computational tasks being performed on this data are more complex and must process larger data volumes than ever before. This has led to unprecedented computing power requirements in the sciences. Indeed much of the effort of scientists is now invested in the analysing and processing of the data rather than the gathering of the data and software costs have come to dominate capital expenditures for many large-scale experiments \cite{Gray}. Some of the scientific fields which have particularly large computational needs are Biology, Astronomy, and Seismology \cite{ScientificWorkflows}. 
+Over the last two decades computation has emerged to become an integral part of scientific research \cite{deelman},\cite{parallelization} and with the increased use of simulations and digital sensors the importance of digital data continues to rise\cite{ScientificWorkflows}. This has led to unprecedented computing power requirements in the sciences. Indeed much of the effort of scientists is now invested in the analysing and processing of the data rather than the gathering of the data, and software costs have come to dominate capital expenditures for many large-scale experiments \cite{Gray}. Some of the scientific fields which have particularly large computational needs are Biology, Astronomy, and Seismology \cite{ScientificWorkflows}. 
 
-To handle so much data it is usually processed in a sequence of small individual steps or tasks, often using command-line tools, in a sophisticated structure of dependencies and pipelines. Since these tasks may work on the same data or a version of that data that has been processed by another task there are of course temporal and logical dependencies between the tasks. Managing these complex interdependent structures can be quite difficult and has given rise to the concept of workflows, which are meant to simplify modelling all of the the tasks and workflow managers which aid in carrying them out. 
+To handle so much data it is usually processed in a sequence of small individual steps or tasks, often using command-line tools \cite{FeedbackBasedAllocation}, in a sophisticated structure of dependencies and pipelines which can run sequentially or concurrently based on the dependencies \cite{parallelization},\cite{examining}. Since these tasks may work on the same data or a version of that data which has been processed by another task, there are of course temporal and logical dependencies between the tasks. Managing these complex interdependent structures can be quite difficult and has given rise to the concept of workflows, which are meant help model the constituent tasks and their dependencies. 
 
-Workflows can be modelled in many different ways, ranging simple scripting languages through to graphs and mathematical models \cite{Shields}. At their core, workflows consist of four simple components: the inputs, the tasks, the dependencies between tasks, and the outputs. This can easily be modelled as a graph with vertices to represent tasks and edges to represent dependencies. An example of this can be seen in \ref{fig:dag}. 
+Workflows can be modelled in many different ways, ranging from simple scripting languages to graphs and mathematical models \cite{Shields}. At their core, workflows consist of four simple components: the inputs, the tasks, the dependencies between tasks, and the outputs. This can easily be modelled as a graph with vertices to represent tasks and edges to represent dependencies. An example of this can be seen in \ref{fig:dag}. 
 
 \begin{figure}[ht]
     \centering
-        \includegraphics[width=0.6\textwidth,height=0.9\textheight]{fig/dag.png}
+        \includegraphics[width=0.45\textwidth,height=0.675\textheight]{fig/dag.png}
         \caption{nf-core/shootstrap Workflow Represented as a Digraph \cite{dag}}
         \label{fig:dag}
 \end{figure}
@@ -52,20 +52,21 @@ Workflows can be modelled in many different ways, ranging simple scripting langu
 
 
 %%=========================================
-\section{Workflow Management Systems}
+\section{Scientific Workflow Management Systems}
 \label{sec:management}
 
+The emergence of scientific workflows as a method for representing and managing these complex computations has lead to the emergence of scientific workflow mangement systems (SWMS) (or scientific workflow managers) as a means to manage the execution of scientific workflows and their constituent tasks. Today there a litany of SWMS’s available, such as Nextflow \cite{nextflow},  Kepler \cite{kepler},  Pegasus \cite{pegasus} and others.
 
+As the resource requirements of scientific workflows can be immense \cite{resource_provisioning}, workflow managers must be able to interface with powerful execution platforms, which usually use resource managers such as Kubernetes \cite{kubernetes}, YARN \cite{yarn}, or other resource managers. A workflow manager will schedule a workflow’s tasks with the resource manager (this will include assigning the task a fixed amount of resources), handle failures as configured by the user, manage the communication between tasks, and if the workflow’s execution succeeds it will collect and store the results.
 
-%%=========================================
-\section{Nextflow}
-\label{sec:nextflow}
+At this point it is important to clarify the distinct responsibilities of a workflow management system, an execution platform and a scientific workflow, with regards to the tasks. The user or creator of the workflow decides which tasks need to be executed and when they need to be executed \textbf{relative to eachother} and the SWMS will schedule tasks with the execution platform according to this design. It is the execution platform which will ultimately decide when a task will \textbf{actually} be executed on physical hardware. In this transaction it is the SWMS which is acting as the middle man. 
+Beyond which tasks to execute and in which order, the user will also decide what the inputs to a task should be and the workflow manager will ensure that before the task is executed those inputs are available and that they are passed to the task. Finally with regards to resources, the user does not need to specify what the resources assigned to a task should be, the user may do so if they like, however it is not a requirement. The assignment of resources to a task is a request by the workflow management system to the execution platform, and provided the platform can fulfil these requirements then the task should be executed in an environment where it has access to as many resources as it was assigned but not more. Tasks which exceed their resource requirements will often be aborted and this will be communicated to the resource manager which will then have to decided if it should try to run the task again, continue without the task, or abort the execution of the entire workflow- all depending on the configuration of the workflow.
 
 %%=========================================
 \section{Reinforcement Learning}
 \label{sec:rl}
 
-Popularized in the seminal book (TODO: cite!) by Sutton and Barto, reinforcement learning presents a framework for an agent to learn the optimal policy for achieving a given goal in an uncertain environment by interacting with the problem and the environment. And most importantly it is able to adjust this policy ``on the go'', meaning it can both learn a new policy if the challenge or the environment changes and that it can be deployed immediately without any training and it will improve as it gains experience. In this context the agent's goal is always set by a reward function. Using reinforcement learning, the agent learns to maximize this function and thus, hopefully, to achieve the goal of its designers. 
+Popularized in the seminal book by Sutton and Barto \cite{sutton_barto}, reinforcement learning presents a framework for an agent to learn the optimal policy for achieving a given goal in an uncertain environment by interacting with the problem and the environment. And most importantly it is able to adjust this policy ``on the go'', meaning it can both learn a new policy if the challenge or the environment changes and that it can be deployed immediately without any training and it will improve as it gains experience. In this context the agent's goal is always set by a reward function. Using reinforcement learning, the agent learns to maximize this function and thus, hopefully, to achieve the goal of its designers. 
 
 Central to reinforcement learning are the policies and how best to evaluate them. In order to achieve its goal an agent needs to develop a policy that maximizes its reward, then as the agent encounters similar situations it simply follows the policy it has learned. To evaluate a policy it must be compared to the ideal version of itself. For any given problem and its reward function there exists at least one policy which maximizes the reward. At its core, reinforcement learning aims to enable the agent to continuously refine its current policy so that it approaches the optimal policy. 
 
