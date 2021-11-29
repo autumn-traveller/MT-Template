@@ -138,17 +138,16 @@ In this formula the function $Q_t(s,a)$ is a state-action-value function. It ref
 
 This is called the temporal difference. It reflects the difference between the current approximation of the value function ($Q_t(s,a)$) and the optimal value function ($r + \gamma \times Q_t(\hat{s},\hat{a})$). If the current approximation is too optimistic then \ref{eq:TD} will be negative and on the other hand if $Q_t$ is too pessimistic or too small then the temporal difference will be positive. Using the temporal difference, $Q_t$ is then adjusted by the temporal difference multiplied with the step size $\alpha$ to yield $Q_{t+1}$. This is what equation \ref{eq:q-learning} shows. All that is required for this iterative process to converge to the optimal value function is that all $s$,$a$ pairs continue to be updated \cite{sutton_barto}.
 
-Using a value function built from equation \ref{eq:q-learning} an agent can approximate an optimal policy by simply using a greedy approach and always picking the action $a$ which maximises $Q(s,a)$, when it is in state $s$ (and then updating its value function according to \ref{eq:q-learning}). By building on this the epsilon greedy q-learning algorithm can be constructed. The pseudocode for this algorithm can be seen in listing \ref{alg:q-learning}.
-
+Using a value function built from equation \ref{eq:q-learning} an agent can approximate an optimal policy by simply using a greedy approach and always picking the action $a$ which maximises $Q(s,a)$, when it is in state $s$ (and then updating its value function according to \ref{eq:q-learning}). By building on this the epsilon greedy q-learning algorithm can be constructed. The pseudocode for this algorithm can be seen below.
 \begin{algorithm}[h]
-Initialise $Q(s,a) = 0$\\
+Initialise $Q(s,a) = 0$ , $\forall (s,a)$\\
 Initialise start state $s$\\
 \While{\textbf{True}}{
         \eIf{$random < \epsilon$}{choose action $a$ randomly}{choose action $a = max_a (Q(s,a))$}
         Take action $a$, receive reward $r$, transition to state $\hat{s}$\\
         Update $Q$: $Q_{new}(s,a) = Q(s,a) + \alpha \times (r + \gamma \times max_{\hat{a}}(Q(\hat{s},\hat{a})) - Q(s,a) )$\\
 }
-\caption{Epsilon Greedy Q-learning Algorithm Pseudocode}
+\caption{Epsilon Greedy Q-learning Pseudocode}
 \label{alg:q-learning}
 \end{algorithm}
 
