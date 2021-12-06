@@ -1,0 +1,30 @@
+%!TEX root = ../thesis.tex
+
+\cleardoublepage
+\chapter{Conclusion and Outlook}
+\label{cha:conclusion}
+
+This chapter looks at what could be improved upon and what aspects may prove interesting for future research. Section \ref{sec:pot_improvements} considers what could be improved or done differently before section \ref{sec:implications} looks forwards and asks what implications this could have and what the next steps would be.
+
+%%=========================================
+\section{Potential Improvements}
+\label{sec:pot_improvement}
+
+Immediately the most obvious area in which these approaches could be improved upon would be to incorporate read and write calls into the reward function. When a thread reads or writes characters from or to a device it must perform a system call and wait for it to complete and during this time the thread cannot use the CPU. If a program has a high degree of parallel operations but also has to read and write lots of characters then it would probably have lower CPU usage (because of the many system calls) but simultaneously would benefit from being assigned more CPUs. However because of the nature of the bandit and the agent’s reward functions as they are now it is unlikely that this task would be assigned more resources simply because the number of read and write calls are not considered.
+
+Moving along this train of thought, it could also be prudent to incorporate the size of a task’s input file into the reward function for the memory bandit and q-learning agent. A task’s memory fooprint is most likely quite closely coupled with the size of the input file and this could prove important information for a reinforcement learning agent.
+
+A different issue which was relevant to both approaches was the length of time needed to train the agents. The gradient bandit were trained for about 40 runs and the q-learning agent took 90 runs before they were “tested” across the next 10 runs. For large scale workflows this would take a considerable amount of time. Of course the agents are able to learn on the go and the performance during the training time is not so much worse as to make the workflows unusable during that time, so it is hard to say how feasible or infeasible this approach is for a given user.
+
+Specifically for the q-learning agent there is room for improvement by incorporating replay buffers and eligibility traces. These would enable the agent to update its value function for the states and actions which led it to its current state and this is could help to learn an optimal $Q$ function faster. This is not done in the current implementation and could have a significant impact on performance. However if one considers the current trends in machine learning and reinforcement learning agents then what could also be a potential improvement is to use deep reinforcement-learning \cite{deepQ}, which uses a deep neural network to learn the policy. 
+
+Finally by training the agents using the same inputs there is a danger of overfitting the agents’ resource assignments. This may be less of a danger for the CPU assignments, because the character of a task’s CPU usage is less dependent on the input and mores so on the task itself- but repeatedly using the same inputs for an agent which sizes tasks for memory does present a real danger of overfitting. This is because the memory footprint of a task is much more dependent on the input to the task and could indeed mean that the agents might learn a worse performing memory allocation. This improvement is not particularly relevant for those workflows which are run repeatedly with similar inputs but could make a difference for other usage patterns. In order to implement this suggestion the workflows used to train the agents would need a greater variety of input data.
+
+%%=========================================
+\section{Implications and Further Areas of Research}
+\label{sec:implications}
+
+The obvious implications of these findings are that much like some of the scheduling problems mentioned in chapter \ref{cha:related_work}, this is also an area in which reinforcement learning has interesting potential. Additionally it has also shown that the resource configurations in scientific workflows have room for improvement and are another area which should be investigated further. Nextflow and other scientific workflow managers represent a different class of actor in the interactions between user, application and execution platform. These workflow managers do no manage the execution platform and they do not create the workflows which are executed. They are a kind of middle man and thus present a unique challenge. Normally the interactions in such an environment are between the user and the execution platform. The user has control over what process it wants to perform and how many resources to ask for, while the execution platform has control over when and how to execute the process. However in the context of a scientific workflow using a workflow manager, the manager sits in between the user and the execution platform and has no control over the tasks that must be executed nor over the execution. It is only capable of scheduling and sizing the tasks. This position requires a slightly different approach to common problems such as scheduling and resource assignment but it also presents an interesting avenue to research novel approaches to familiar problems.
+
+Following up on this idea, one more interesting area for further research would be incorporating a machine learning approach into the scientific workflows internal scheduler. Whilst the reinforcement learning agents used for each individual task had no knowledge of the other tasks and dependencies in the workflow a scheduler would have the full understanding of a workflows digraph and could perhaps improve performance to an even greater degree. 
+

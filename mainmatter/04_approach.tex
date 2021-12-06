@@ -136,6 +136,7 @@ Since division by the task’s average time is incorporated into the reward func
 The q-learning agent also has 3 other parameters- the step size $\alpha$, epsilon $\epsilon$ and the discount $\gamma$. Step size was set to 0.1 and the discount was 1.0. Epsilon is adjusted over time- at first it is 0.5, to encourage exploration, then after 50 runs it is decreased to 0.25 and after 100 runs it is 0.1 to discourage exploration but leave room for the bandit to still occasionally try other actions and visit different states.
 
 \subsubsection{Exploring the State-Action Space}
+\label{subsub:states}
 
 It should be noted here that unlike the gradient bandits from before, which had to decide from $c$ or $n$ number of actions for the CPU and memory bandits respectively, the q-learning agent must learn the value function for $(c-2)*((m-2)*a + 2*(a-1)) + 2*((m-2)*(a-1) + 2*(a-2))$ state-action combinations. Here $c$ is the number of possible CPU states, $m$ is the number of possible memory states and $a=5$ is the number of possible actions. Now since the q-learning algorithm from \ref{alg:q-learning} needs to try each action in every state combination at least once, and explores with probability $\epsilon$ then for arbitrary examples of $c=4$ and $m=3$ it will take, at the very least, 46 different runs with the same task to have tried every action in every state. This shows how much more complex the q-learning approach is than that with gradient bandits.
 
