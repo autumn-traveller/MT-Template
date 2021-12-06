@@ -6,6 +6,20 @@
 
 This chapter looks at the results achieved and considers their origins as well as their implications going forwards. In section \ref{sec:analysis} the results are presented and analysed. Then  section \ref{sec:_pot_improvements} considers what could be improved or done differently . Finally section \ref{sec:implications} looks forwards and asks what implications this could have and what the next steps would be.
 
+
+\section{Testing the Agents}
+\label{sec:testing}
+
+In order to evaluate the performance of these agents they were tested on a 32-core, 125GB RAM machine against 5 different workflows. Each workflow is run 10 times without any reinforcement learning agents active. This was done to have something to compare the results to later but also so that there was historical data about the average time each of the tasks take since the reinforcement learning agents need this information. After that the agents are tested. The gradient bandits are run 50 times for each workflow and the Q-learning agents 100 times.
+
+The input data used for the workflows is based on custom combinations of different input files provided by the workflow's maintainers- there are the full example datasets and the short example datasets. The combinations are designed to strike a balance between having large input data and realistic task configurations but also being short enough that it is feasible to run the workflows hundreds of times. For reference, the full datasets will often take 6 hours or more to run once whereas the short examples never take more than 5 minutes. 
+
+The nextflow source code inherently keeps track of the total number of resources available and the resources already assigned to tasks and it will not schedule more resources than the system has. The tasks are all run inside of docker containers with exactly number of CPUs and memory requested by the task. 
+
+For the final comparison in the evaluation chapter the 10 runs without the agents were compared to the last 10 runs with each of the agents.
+
+
+
 %%=========================================
 \section{Analysis of Results}
 \label{sec:analysis}
