@@ -38,7 +38,13 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 
 % Subfigure
 \usepackage{subcaption}
-
+\usepackage{import}
+\usepackage{pgf}
+\newcommand\inputpgf[2]{{
+\let\pgfimageWithoutPath\pgfimage
+\renewcommand{\pgfimage}[2][]{\pgfimageWithoutPath[##1]{#1/##2}}
+\input{#1/#2}
+}}
 \usepackage{floatpag} % to move floatpagenr to topright
 
 % Fussnote
@@ -153,15 +159,15 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 \addcontentsline{toc}{section}{\listfigurename}
 \listoffigures
 
-\clearpage
-\phantomsection
-\addcontentsline{toc}{section}{\listtablename}
-\listoftables
-
-\clearpage
-\phantomsection
-\addcontentsline{toc}{section}{\lstlistlistingname}
-\lstlistoflistings
+%\clearpage
+%\phantomsection
+%\addcontentsline{toc}{section}{\listtablename}
+%\listoftables
+%
+%\clearpage
+%\phantomsection
+%\addcontentsline{toc}{section}{\lstlistlistingname}
+%\lstlistoflistings
 
 %%=========================================
 % Mainmatter
@@ -180,11 +186,11 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 %%=========================================
 %Backmatter
 
-\appendix
-\include{backmatter/00_lessImportantText}
-\include{backmatter/01_acronyms}
-\include{backmatter/02_lexicon}
-\include{backmatter/03_listings}
+%\appendix
+%\include{backmatter/00_lessImportantText}
+%\include{backmatter/01_acronyms}
+%\include{backmatter/02_lexicon}
+%\include{backmatter/03_listings}
 % Include more appendices as required.
 
 \cleardoublepage
