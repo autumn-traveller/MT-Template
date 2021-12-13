@@ -6,17 +6,17 @@
 \addcontentsline{toc}{section}{Abstract}
 \section*{Abstract}
 
-The growth of computational power and big data has led to a massive increase in demand for computing services by users who aim to process large datasets. Particularly in the natural sciences it has become common for scientists to break down their computing needs into a sequence of smaller tasks, a so called workflow. These workflows can then be run on a variety of different execution platforms, depending on the users needs.  One of the most pertinent fields for this is Bioinformatics.
+The growth of computational power and the increased importance of digital data has led to a massive increase in demand for computing services by users who aim to process large datasets. Particularly in the natural sciences it has become common for scientists to break down their computing needs into a sequence of smaller tasks, a so called workflow. These workflows can then be run on a variety of different execution platforms, depending on the users needs.
 
 Since workflows are composed of segregated inter-dependent tasks which can run in their own containers, the individual tasks which make up a workflow can be assigned a fraction of the computational resources available to the entire execution platform and doing so intelligently could improve efficiency and performance.
 
-This thesis aims to investigate the allocation of resources to individual tasks, and specifically how reinforcement learning can be applied to aid in choosing more efficien allocations. The implementation of a reinforcement learning solution will be integrated into source code  of the popular scientific workflow management system nextflow and tested against common bioinformatic workflows. Two different reinforcement learning approaches (Gradient Bandits and Q-Learning) will be compared and their performance will be judged both against eachother and against the performance of the task's default resource configurations.
+This thesis aims to investigate how reinforcement learning can be applied to the allocation of resources to individual tasks to choose more efficient allocations. The implementation of a reinforcement learning solution will be integrated into the source code of a popular scientific workflow management system and tested with several common bioinformatic workflows. Two different approaches (Gradient Bandits and Q-Learning) will be used and their performance will be judged alongside the performance of the task's default resource configurations and the resource allocation chosen by a naive approach using a feedback loop.
 
-Should such an approach prove fruitful and provide an improvement in resource usage efficiency it would naturally indicate this is an area which should be explored further and that the use of these methods can improve the performance of scientific workflows. This would be helpful to both the scientists which use workflow managers as well as the ownders and administrators of the execution platforms on which they run.
+In the end the approaches presented in this thesis outperform the default configurations with regards to both memory and CPU efficiency and are able to achieve better CPU efficiency than the feedback loop, but while they fail to match its memory efficiency they still represent a vast improvement on the default configuration.
 
 
 %\newpage
 %\addcontentsline{toc}{section}{Zusammenfassung}
 %\section*{Zusammenfassung}
 
-%Der Aufstieg des Internet of Things (IoT) stellt uns vor neue Herausforderungen bezueglich der Speicherung, Verarbeitung und Darstellung von Daten.
+%Der Aufstieg des Internet of Things (IoT) stellt uns vor neue Herausforderungen bezueglich der Speicherung, Verarbeitung und Darstellung von Daten
