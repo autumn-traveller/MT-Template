@@ -1,5 +1,7 @@
 % This is the root file of the thesis: thesis.tex
 
+% TODO for actual thesis: re-include declaration, abstract, table of contents, list of figures, and other stuff that was removed for the exposee
+
 %%===================================
 % \documentclass[12pt, oneside]{report}
 \documentclass[12pt, twoside]{report}
@@ -149,15 +151,15 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 \include{frontmatter/front} % This is the titlepage
 \setcounter{page}{0}
 \pagenumbering{Roman}
-\include{frontmatter/declaration}
-\include{frontmatter/acknowledgment}
-\include{frontmatter/summary}
-\tableofcontents
+%\include{frontmatter/declaration}
+%\include{frontmatter/acknowledgment}
+%\include{frontmatter/summary}
+%\tableofcontents
 
-\clearpage
-\phantomsection
-\addcontentsline{toc}{section}{\listfigurename}
-\listoffigures
+%\clearpage
+%\phantomsection
+%\addcontentsline{toc}{section}{\listfigurename}
+%\listoffigures
 
 %\clearpage
 %\phantomsection
@@ -176,23 +178,18 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 \setcounter{page}{0}
 \pagenumbering{arabic}
 \include{mainmatter/01_introduction}
-\include{mainmatter/02_background}
-\include{mainmatter/03_related_work}
-\include{mainmatter/04_approach}
-\include{mainmatter/05_evaluation}
-\include{mainmatter/06_conclusion}
+%\include{mainmatter/02_background}
+%\include{mainmatter/03_related_work}
+%\include{mainmatter/04_approach}
+%\include{mainmatter/05_evaluation}
+%\include{mainmatter/06_conclusion}
 % Include more chapters as required.
 
 %%=========================================
 %Backmatter
 
 \appendix
-%\include{backmatter/00_lessImportantText}
-%\include{backmatter/01_acronyms}
-%\include{backmatter/02_lexicon}
-%\include{backmatter/03_listings}
-%\include{backmatter/05_cpu_only_approaches}
-\include{backmatter/04_example_qagent}
+%\include{backmatter/04_example_qagent}
 % Include more appendices as required.
 
 \cleardoublepage
