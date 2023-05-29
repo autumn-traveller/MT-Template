@@ -1,16 +1,17 @@
 %!TEX root = ../thesis.tex
 
 \cleardoublepage
-\chapter{Introduction}
+\chapter{Introducing Reliable Multipath Backhaul}
+
 \label{cha:introduction}
 
 %%=========================================
 \section{Motivation and Problem Description}
 \label{sec:motivation}
 
-One of the aims for the fifth generation of mobile networks (5G) and it's successors will be a greater diversification of the classes of service. As the use cases for these networks evolve, there is a greater need for quality of service (QoS) tailored to each use case. For example, in Industrial Internet of Things (IIoT) applications the bandwidth requirements are often quite low, however the requirements on latency, jitter, and reliability may be extremely stringent. Supporting these kinds of classes of service can be  a challenge for mobile network operators (MNOs) and will require novel approaches to familiar problems, such as backhaul.
+One of the aims for the fifth generation of mobile networks (5G) and it's successors will be a greater diversification of the classes of service. As the use cases for these networks evolve, there is a greater need for quality of service (QoS) tailored to each use case. For example, in Industrial Internet of Things (IIoT) applications the bandwidth requirements are often quite low, however the requirements on latency, jitter, and reliability may be extremely stringent. Supporting these kinds of classes of service can be a challenge for mobile network operators (MNOs) and will require novel approaches to familiar problems, such as backhaul.
 
-With more backhaul solutions becoming available (i.e. LEO satellite links, and mmWave backhaul) and adding to the existing set of options (DSL, optical fibre, DOCSIS, etc.) network operators may choose to utilize more than one backhaul connection at once in order to increase the available bandwidth or to utilize the different qualities of the backhaul links. Such a situation, could then be used to achieve higher quality of service by intelligently selecting on which link to forward packets. This approach bears similarity to multihoming as well as to multi-path routing, and can take inspiration from the existing body of research in these fields which has demonstrated that QoS can be improved by using multiple paths simultaneously \cite{akella_measurement-based_nodate, shu_tao_improving_2005, habib_improving_2007, goldenberg_optimizing_nodate}.
+With more backhaul solutions becoming available (i.e. LEO satellite links, and mmWave backhaul) and adding to the existing set of options (DSL, optical fibre, DOCSIS, dedicated lines, etc.) network operators may choose to utilize more than one backhaul connection at once in order to increase the available bandwidth or to utilize the different qualities of the backhaul links. Such a situation, could then be used to achieve higher quality of service by intelligently selecting on which link to forward packets. This approach bears similarity to multihoming as well as to multi-path routing, and can take inspiration from the existing body of research in these fields which has demonstrated that QoS can be improved by using multiple paths simultaneously \cite{akella2003measurement, tao2005improving, habib2007improving, goldenberg2004optimizing, huang2008multiconstrained, akella2008performance}.
 
 
 %\LTXtable{\textwidth}{tab/scenario1_sensor}
@@ -30,17 +31,17 @@ With more backhaul solutions becoming available (i.e. LEO satellite links, and m
 \begin{figure}[h]
     \centering
         \includegraphics[width=0.75\textwidth, height=0.75\textwidth]{fig/mesh_network.png}
-        \caption{Network Design of Interconnected Backhaul Sites}
+        \caption{Network of Backhaul Entities}
         \label{fig:mesh}
 \end{figure}
 
-The goal of this thesis is to design a backhaul entity, that can be placed at the ingress and egress point of connected networks, and which can intelligently forward packets on one or more links in order to meet specific QoS requirements. The performance of this approach will then be quantitatively analysed in experiments. Looking at figure \ref{fig:use} we can see how this is envisioned to work: A backhaul entity is deployed in 2 or more sites which have more than one egress link. Then, using the multiple links, the traffic is backhauled to the second site, while respecting it's QoS requirements. An example of how this entity could be deployed in multiple sites, interconnected in a mesh network, can be seen in figure \ref{fig:mesh}. This could allow network operators to provide more reliable quality of service for it's users, especially for important applications (e.g. between an industrial controlling site, and multiple factories).
+The goal of this thesis is to design a backhaul entity, that can be placed at the ingress and egress point of connected networks, and which can intelligently forward packets on one or more links in order to meet specific QoS requirements. The performance of this approach will then be quantitatively analysed in experiments. Looking at figure \ref{fig:use} we can see how this is envisioned to work: A backhaul entity is deployed in 2 or more sites which have more than one egress link. Then, using the multiple links, the traffic is backhauled to the second site, while respecting it's QoS requirements. An example of how this entity could be deployed in multiple sites, interconnected in a mesh network, can be seen in figure \ref{fig:mesh}. This could allow network operators to provide more reliable quality of service for it's users, especially for important applications (e.g. between industrial sites).
 
 %%=========================================
 \section{Structure of the Thesis}
 \label{sec:structure}
 
-The thesis will be structured as follows:
+The planned work for the thesis will be structured as follows:
 
 \begin{enumerate}
 \item{\textit{Design}: Research existing approaches and solutions, and design an approach for reliable backhaul over multiple paths/links}
@@ -56,26 +57,115 @@ The thesis will be structured as follows:
         \label{fig:testbed}
 \end{figure}
 
+The structure of the report will be a simple 5 chapter format: 1) Introduction, 2) Background and Related Work, 3) Approach, 4) Evaluation, 5) Conclusion. The approach chapter will discuss the proposed solution, and the evaluation chapter will encompass the design of the testbed and an analysis of the results.
+
+\subsection{Timescale}
+
+A thesis should take 6 months, or roughly 26 weeks. At present it is proposed to divide those 26 weeks into 4 equal sized chunks. The first 3 chunks will correspond to the 3 items mentioned previously in this section, the final "chunk" will be to finish writing up the report, however it is planned to do some writing during the other 3 chunks as well. In the first period - the \textit{Design} period, chapters 1 and 2 will also be written. After the \textit{Implementation} period is finished, chapter 3 can be written. Chapters 4 and 5 can then be written after the \textit{Evaluation} period finishes. That leaves the final chunk of time, which can be used to revise the document, as well as a buffer in case other parts of the thesis take longer to do. 
 
 \section{Envisioned Approach}
 
 \subsection{Collecting Per-Link Metrics}
-In order to realize such a backhaul entity, the entity needs to be able to maintain a  set of metrics about the available links to aid it in choosing which link or links to utilize. This may not always be straightforward, and could require prediction of link quality based on previous measurements. Beyond this, the entity also needs a method through which the QoS it needs to provide for a given flow can be externally configured. Only then can the actual approach be implemented.
+
+In order to realize such a backhaul entity, the entity needs to be able to maintain a set of metrics about the available links to aid it in choosing which links to utilize. This may not always be straightforward, and could require prediction of link quality based on previous measurements.
+
+\subsubsection{Measurement-based Metrics}
+
+In \cite{akella2008performance} the authors collected both passive metrics (looking at response times for outgoing packets), and active measurements (sending ICMP ping, or TCP SYN messages and measuring the response time). It is important to note that using the passive measurements enabled their multihomed approach to perform well, but when using the active measurements the performance was better. Crucially, the passive measurements worked better over larger sampling periods because it took longer to get a full overview of all the possible routes. Whereas the active sampling approach acquired it's measurements faster and was thus more effective over smaller sampling intervals.
+
+Considering these results, it is proposed to utilize both active and passive measurements. All three metrics- packet loss, latency, and jitter- will be periodically measured in an active manner, on a site to site basis. The period over which to perform these measurements is an important design decision.
+
+Beyond this, these metrics will also be monitored on a passive basis wherever possible. For all three metrics a response is required for each sent message, in order to measure either the time needed (for latency and jitter), or to ascertain a packet has been lost. This may only be possible for TCP SYN and SYN ACK messages, and other protocols which are guaranteed to contain certain request-response handshakes.
+
+\subsection{Pre-configured Metrics}
+
+Since certain links may be come with hard guarantees on packet loss, latency and jitter, this would drastically simplify the process, and thus allow us to save ourselves the measurement process for said links. Therefore the backhaul entity which will be designed, shall allow for a link to have the jitter, reliability and latency metrics pre-configured, as well as allowing them to be updated while the entity is running.
 
 \subsection{How to Guarantee QoS}
 
-The design of this approach is also an interesting challenge. One idea to improve jitter when backhauling across multiple links is to duplicate packets and forward them both across different links, and have the backhaul entity on the other end buffer incoming packets and release them at a constant rate. This way in the event of a packet being lost on one link, the other link is still able to receive it and the delay caused by retransmission is avoided. For reducing latency it would appear likely that the simplest approach may be a greedy method which always selects the lowest latency connection. However there is room for nuance here since the connection must not be overloaded and also because certain traffic may have very relaxed latency requirements but use up more bandwidth. This means monitoring the load on any one link will be important. Finally there are also more intelligent approaches, i.e. integer linear programming which could be used to optimally satisfy certain requirements.
+The design of this approach is also an interesting challenge. One idea to improve jitter when backhauling across multiple links is to duplicate packets and forward them on multiple links, and have the backhaul entity on the other end buffer incoming packets and release them at a constant rate. This way in the event of a packet being lost on one link, the other link is still able to receive it and the delay caused by retransmission is avoided. The downside with this approach is that it guarantees the latency will always be that of the slowest link.
 
-As can be seen from this short overview, there are a littany of factors to consider and approaches which could be taken. It will be important to maintain a strict focus in this thesis and not try to optimize too many requirements at once, or try to consider too many different metrics for any given link. The number of QoS factors which will be taken into consideration and adjusted for must be kept small, in addition to this, the number of link metrics which will be analysed must also be kept to a reasonable amount.
+For reducing latency it would appear likely that the simplest approach may be a greedy method (as in \cite{goldenberg2004optimizing} in the online case) which always selects the lowest latency connection. However there is room for nuance here since the connection must not be overloaded and also because certain traffic may have very relaxed latency requirements but use up more bandwidth. This means monitoring the load on any one link will be important. Finally there are also more intelligent approaches, i.e. integer linear programming (used in \cite{huang2008multiconstrained} and for the offline case in \cite{goldenberg2004optimizing}) which could be used to optimally satisfy certain requirements.
 
-\subsection{Approaches in existing literature}
+The timescale over which to use a chosen link is also of interest. In \cite{habib2007improving} the time for which a link should be used is varied based on the predicted qualities of the link. These predictions are made based on past performance.
 
-TODO (ILP approach from some paper..., QoS thing which uses past performance and adjusts the window for how long to use a connection)
+Reliability presents yet another challenge, however in a multihomed scenario it becomes easier to guarantee this via duplication, and/or forward error correction (FEC). For example if a packet flow requires 99\% reliability this can be guaranteed by duplicating packets across two links which are both only 90\% reliable. Alternatively, in such a situation, FEC could be used to pre-code the packets in order to provide the additional guarantees against packet loss and thus increase the reliability to the required level.
+
+\subsubsection{Proposed Solution}
+
+The solution proposed for solving this multi-constrained QoS problem is to use integer linear programming (ILP). Although ILP is NP-Complete, we can parameterize the problem by the number of outgoing links, which never needs to be more than 4, and thus brute force the solutions. The ILP constrained problem will be to select those links on which to forward packets while minimizing the overall number of links used, and making sure to satisfy the latency, jitter and reliability requirements of the given flow.
+
+\begin{gather}
+\text{Minimize } \sum_{i=1}^{P}x_i \\
+\text{Where, } d(i) \le D \\
+j(i) \le J\\
+\text{and }1 - \prod_{i=1}^{P}{r(i)} \ge R \\
+\text{for } x_i \in \{0,1\}
+\end{gather}
+
+Here the variables $D$, $J$, and $R$ are the flow's delay, jitter, and reliability requirements, while the functions $d(x_i)$, $j(x_i)$, $r(x_i)$ are the predicted delay, jitter, and reliability of the respective $P$ links. But only when $x_i$ is 1 - they are defined as 0, 0, and 1 respectively when $x_i$ is 0. The predicted values will usually just be the latest measurement, as recommended in 
+\cite{akella2008performance}, however there is room here to use more advanced metrics to predict the future link quality and thus perform preemptive path switching. The $x_i$ variable indicates whether or not link $i$ shall be used. If no solution can be found which satisfies these conditions then the flow is rejected because its QoS cannot be guaranteed. If a solution is found, then the flow's packets will be forwarded on each link $i$ where $x_i = 1$.
+
+\subsection{Potential Issues and Design Questions which are Still Open}
+
+At present the idea would be to use the GTP protocol to tunnel data between any two backhaul entities, and then use the tunnel endpoint IDs (TEIDs) to differentiate between different traffic flows. In the control plane of the backhaul entity, one link would be chosen to be used for control and co-ordination messages between the two backhaul entities.
+
+This approach could run into trouble if there is fragmentation. Some applications attempt to base their packet sizes on the most common MTU values for ethernet links (1500 bytes  minus 20 bytes for the IPv4 header and 2 bytes for UDP), and this causes a problem when the packet is tunneled because the overhead of another IP header on top of the tunnel header pushes the packet beyond the MTU and thus it has to be fragmented, which can degrade performance. In the proposed design of the testbed, there is a traffic generator at use, so this generator can be configured not to  generate packets exceeding 1450 bytes, but this issue is of practical concern for any realistic deployments.
+
+\subsection{Evaluating Performance}
+
+In order to evaluate the success of the proposed approach, three scenarios will be set up and investigated. Each setup will consist of two backhaul entities, and some number of emulated links going between them. The first scenario will feature 2 WAN links, a dedicated line, and a satellite connection. The second scenario will not feature the dedicated line, since it is expected that a leased line may be too obvious a choice for any of the traffic with strict QoS requirements. Finally, in order to further investigate these situations with an obviously superior candidate, the third scenario will just feature two links, a dedicated line and a WAN link.
+
+In all of these scenarios the same traffic flows will be replayed. This traffic will contain various types of flows, with various QoS requirements. Before a new flow is started, the flow's requirements are sent to the backhaul entity and it is either accepted or rejected. During the traffic replay, the delay, jitter, and reliability will be measured.
+
+These measurements will be performed once with the ILP approach proposed earlier and once with a simple round-robin approach for selecting links, and finally compared against an offline approach, where the optimal decision is computed with complete knowledge of the future. This offline approach will serve as the baseline for optimal performance, against which the other two approaches can be compared.
 
 \section{Scope and Potential Extensions}
 
 It may be worth investigating the effect of using information theoretical approaches such as network coding, or forward error correction. These methods can, respectively, improve throughput and provide protection against packet loss. However it is not clear if it would be feasible to integrate them into the backhaul entity's packet scheduling algorithm, and how much effort that may require.
 
-One other potential extension of this thesis would be to compare performance against an offline scheduler which knows the traffic patterns and link patterns in advance. This could provide a baseline for what could be considered optimal performance. However to design such a scheduler and train it offline before the online tests could be unrealistic for the scope of this thesis.
+Inevitably the conversation must also turn to machine learning, and indeed, applying it here could be an interesting topic for future research, however it is most likely beyond the scale of this thesis.
 
-At the very least both of these points bear mentioning in the future work section.
+
+%%% include all citations
+
+% start zotero
+
+%\nocite{kundel_user_2022}
+%\nocite{goldenberg_optimizing_nodate}
+%\nocite{lange_performance_2015}
+%\nocite{tarique_survey_2009}
+%\nocite{tschoke_time-sensitive_2021}
+%\nocite{ganichev_yamr_2010}
+%\nocite{habib_improving_2007}
+%\nocite{tao2005improving}
+%\nocite{fanglu_guo_experiences_2004}
+%\nocite{akella_measurement-based_nodate}
+%\nocite{noauthor_zotero_nodate}
+
+% end zotero...
+
+% google translate
+
+\nocite{tsai2006review}
+\nocite{tao2005improving}
+\nocite{kundel2022user}
+\nocite{goldenberg2004optimizing}
+\nocite{lange2015performance}
+\nocite{tarique2009survey}
+\nocite{tschoke2021time}
+\nocite{ganichev2010yamr}
+\nocite{habib2007improving}
+\nocite{guo2004experiences}
+\nocite{akella2003measurement}
+\nocite{ergencc2021reliability}
+\nocite{tao2004application}
+\nocite{alwan2010multi}
+\nocite{prados2021asynchronous}
+\nocite{zhang2016fundamentals}
+\nocite{chen2020collaborative}
+\nocite{akella2008performance}
+\nocite{andreoli2017mobile}
+\nocite{huang2008multiconstrained}
+
+
