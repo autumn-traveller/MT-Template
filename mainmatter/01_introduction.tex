@@ -1,7 +1,7 @@
 %!TEX root = ../thesis.tex
 
 \cleardoublepage
-\chapter{Introducing Reliable Multipath Backhaul}
+\chapter{Deterministic Multipath Backhaul Exposee - Masters Thesis}
 
 \label{cha:introduction}
 
@@ -61,7 +61,45 @@ The structure of the report will be a simple 5 chapter format: 1) Introduction, 
 
 \subsection{Timescale}
 
-A thesis should take 6 months, or roughly 26 weeks. At present it is proposed to divide those 26 weeks into 4 equal sized chunks. The first 3 chunks will correspond to the 3 items mentioned previously in this section, the final "chunk" will be to finish writing up the report, however it is planned to do some writing during the other 3 chunks as well. In the first period - the \textit{Design} period, chapters 1 and 2 will also be written. After the \textit{Implementation} period is finished, chapter 3 can be written. Chapters 4 and 5 can then be written after the \textit{Evaluation} period finishes. That leaves the final chunk of time, which can be used to revise the document, as well as a buffer in case other parts of the thesis take longer to do. 
+A thesis should take 6 months, or roughly 26 weeks. At present it is proposed to divide those 26 weeks into 4 equal sized chunks. The first 3 chunks will correspond to the 3 items mentioned previously in this section, the final "chunk" will be to finish writing up the report, however it is planned to do some writing during the other 3 chunks as well. In the first period - the \textit{Design} period, chapters 1 and 2 will also be worked on. After the \textit{Implementation} period is finished, chapter 3 can be written. Chapters 4 and 5 can then be written after the \textit{Evaluation} period finishes. That leaves the final chunk of time, which can be used to revise the document, as well as a buffer in case other parts of the thesis take longer to do.
+
+The first phase of the experimental work will consist of setting up the testbed. This means installing the measurement modules as well as the link emulators. The next phase will require the implementation of the backhaul entity, as designed. The backhaul entity will require a module for collecting per-metric links, as well as the implementation of an algorithm to select the best link or links for a given flow. In the course of designing and preparing the backhaul entity there may be room for adjusting the initial plan based on what we experience during development. Next, the entity must be tested. During this phase traffic replays will be played over the testbed and evaluated. Thereafter the round robin approach and the "god routing" approach will also be evaluated. These two approaches will serve for comparison with the performance of the backhaul entity. Finally, this data must be analyzed, and the thesis can reach its conclusions, with 1 or 2 weeks buffer room for last minute revisions.
+
+
+\begin{figure}
+\begin{ganttchart}[expand chart=\textwidth, vgrid, hgrid]{1}{26}
+  \gantttitle{Week}{26} \\
+  \gantttitlelist{1,...,26}{1} \\
+%  \ganttgroup{Group 1}{1}{7} \\
+  \ganttbar{Literature Review}{1}{2}  \ganttbar[bar/.append style={fill=lightgray}]{}{3}{4} \\
+  \ganttbar{Setup Testbed}{2}{4} \\
+  \ganttbar{Implement Approach}{4}{8}] \ganttbar[bar/.append style={fill=lightgray}]{}{9}{10}  \\
+  %ganttbar[bar/.append style={fill=lightgray}]{}{14}{14} \\
+  \ganttbar{Metric Collection}{5}{7} \\
+  \ganttbar{Link Switching Algorithm}{6}{8}\\
+  \ganttbar{Adjust and Improve}{7}{9} \\
+  \ganttbar{Measurements}{10}{16}  \ganttbar[bar/.append style={fill=lightgray}]{}{16}{18} \\
+  \ganttbar{Round Robin}{12}{14} \\
+  \ganttbar{God Routing}{14}{16}  \\
+  \ganttbar{Evaluation}{18}{20}  \ganttbar[bar/.append style={fill=lightgray}]{}{21}{22} \\
+  \ganttbar{Finish Writing Thesis}{21}{23}  \ganttbar[bar/.append style={fill=lightgray}]{}{24}{26} \\
+  % \ganttlinkedbar{Task 2}{3}{7} \ganttnewline
+ % \ganttmilestone{Milestone}{7} \ganttnewline
+  \ganttlink{elem2}{elem3}
+  \ganttlink{elem4}{elem8}
+  \ganttlink{elem5}{elem8}  
+  \ganttlink{elem6}{elem8}
+  \ganttlink{elem7}{elem8}
+
+ \ganttlink{elem9}{elem12}
+ \ganttlink{elem10}{elem12}
+ \ganttlink{elem11}{elem12}
+
+\ganttlink{elem12}{elem14}
+
+\end{ganttchart}
+\caption{Gantt Chart: 01.06.23 - 01.12.23}
+\end{figure}
 
 \section{Envisioned Approach}
 
@@ -97,14 +135,13 @@ The solution proposed for solving this multi-constrained QoS problem is to use i
 
 \begin{gather}
 \text{Minimize } \sum_{i=1}^{P}x_i \\
-\text{Where, } d(i) \le D \\
-j(i) \le J\\
-\text{and }1 - \prod_{i=1}^{P}{r(i)} \ge R \\
+\text{Where, } d(i) * x_i\le D \\
+j(i) * x_i \le J \\
+\text{and }1 - \prod_{i=1}^{P}{ ( 1- r(i) * x_i ) } \ge R  \\
 \text{for } x_i \in \{0,1\}
 \end{gather}
 
-Here the variables $D$, $J$, and $R$ are the flow's delay, jitter, and reliability requirements, while the functions $d(x_i)$, $j(x_i)$, $r(x_i)$ are the predicted delay, jitter, and reliability of the respective $P$ links. But only when $x_i$ is 1 - they are defined as 0, 0, and 1 respectively when $x_i$ is 0. The predicted values will usually just be the latest measurement, as recommended in 
-\cite{akella2008performance}, however there is room here to use more advanced metrics to predict the future link quality and thus perform preemptive path switching. The $x_i$ variable indicates whether or not link $i$ shall be used. If no solution can be found which satisfies these conditions then the flow is rejected because its QoS cannot be guaranteed. If a solution is found, then the flow's packets will be forwarded on each link $i$ where $x_i = 1$.
+Here the variables $D$, $J$, and $R$ are the flow's delay, jitter, and reliability requirements, while the functions $d(i)$, $j(i)$, $r(i)$ are the predicted delay, jitter, and reliability of the link $i$ out of the $P$ total links. The predicted values will usually just be the latest measurement, as recommended in \cite{akella2008performance}, however there is room here to use more advanced metrics to predict the future link quality and thus perform preemptive path switching. The $x_i$ variable indicates whether or not link $i$ shall be used. If a solution is found, then the flow's packets will be forwarded on each link $i$ where $x_i = 1$, and if no solution can be found which satisfies these conditions then the flow is rejected because its QoS cannot be guaranteed.
 
 \subsection{Potential Issues and Design Questions which are Still Open}
 
@@ -119,12 +156,6 @@ In order to evaluate the success of the proposed approach, three scenarios will 
 In all of these scenarios the same traffic flows will be replayed. This traffic will contain various types of flows, with various QoS requirements. Before a new flow is started, the flow's requirements are sent to the backhaul entity and it is either accepted or rejected. During the traffic replay, the delay, jitter, and reliability will be measured.
 
 These measurements will be performed once with the ILP approach proposed earlier and once with a simple round-robin approach for selecting links, and finally compared against an offline approach, where the optimal decision is computed with complete knowledge of the future. This offline approach will serve as the baseline for optimal performance, against which the other two approaches can be compared.
-
-\section{Scope and Potential Extensions}
-
-It may be worth investigating the effect of using information theoretical approaches such as network coding, or forward error correction. These methods can, respectively, improve throughput and provide protection against packet loss. However it is not clear if it would be feasible to integrate them into the backhaul entity's packet scheduling algorithm, and how much effort that may require.
-
-Inevitably the conversation must also turn to machine learning, and indeed, applying it here could be an interesting topic for future research, however it is most likely beyond the scale of this thesis.
 
 
 %%% include all citations
