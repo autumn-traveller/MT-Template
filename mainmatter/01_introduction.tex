@@ -35,7 +35,16 @@ With more backhaul solutions becoming available (i.e. LEO satellite links, and m
         \label{fig:mesh}
 \end{figure}
 
-The goal of this thesis is to design a backhaul entity, that can be placed at the ingress and egress point of connected networks, and which can intelligently forward packets on one or more links in order to meet specific QoS requirements. The performance of this approach will then be quantitatively analysed in experiments. Looking at figure \ref{fig:use} we can see how this is envisioned to work: A backhaul entity is deployed in 2 or more sites which have more than one egress link. Then, using the multiple links, the traffic is backhauled to the second site, while respecting it's QoS requirements. An example of how this entity could be deployed in multiple sites, interconnected in a mesh network, can be seen in figure \ref{fig:mesh}. This could allow network operators to provide more reliable quality of service for it's users, especially for important applications (e.g. between industrial sites).
+The goal of this thesis is to design a backhaul entity, that can be placed at the ingress and egress point of two or more locations, and utilizes multipathing in order to provide deterministic backhaul. The performance of this approach will then be quantitatively analysed in experiments. Looking at figure \ref{fig:use} we can see how this is envisioned to work: A backhaul entity is deployed in 2 or more sites which have more than one egress link. Then, using the multiple links, the traffic is backhauled to the second site, while respecting it's QoS requirements. An example of how this entity could be deployed in multiple sites, interconnected in a mesh network, can be seen in figure \ref{fig:mesh}. This could allow network operators to utilize multipathing to provide more determinism for their users, especially for critical applications (e.g. between industrial sites).
+
+\begin{figure}[h]
+    \centering
+        \includegraphics[width=\textwidth]{fig/telco-use-case-2.png}
+        \caption{5G Deployment with 2 UPFs}
+        \label{fig:telco}
+\end{figure}
+
+For a 5G deployment the proposed backhaul entity could be deployed between multiple User Plane Functions (UPF) and Data Networks (DNs), which also host a backhaul entity, to provide deterministic backhaul. The architecture for such a deployment is shown in figure \ref{fig:telco}.
 
 %%=========================================
 \section{Structure of the Thesis}
@@ -131,7 +140,7 @@ Reliability presents yet another challenge, however in a multihomed scenario it 
 
 \subsubsection{Proposed Solution}
 
-The solution proposed for solving this multi-constrained QoS problem is to use integer linear programming (ILP). Although ILP is NP-Complete, we can parameterize the problem by the number of outgoing links, which never needs to be more than 4, and thus brute force the solutions. The ILP constrained problem will be to select those links on which to forward packets while minimizing the overall number of links used, and making sure to satisfy the latency, jitter and reliability requirements of the given flow.
+The solution proposed for solving this multi-constrained QoS problem is to use integer linear programming (ILP). Although ILP is NP-Complete, we can parameterize the problem by the number of outgoing links, since diminishing returns set in after more than 4 links \cite{akella2003measurement}, and thus brute force the solutions. The ILP constrained problem will be to select those links on which to forward packets while minimizing the overall number of links used, and making sure to satisfy the latency, jitter and reliability requirements of the given flow.
 
 \begin{gather}
 \text{Minimize } \sum_{i=1}^{P}x_i \\
