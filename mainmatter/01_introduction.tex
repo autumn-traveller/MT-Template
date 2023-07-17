@@ -93,7 +93,7 @@ The solution proposed for solving this multi-constrained QoS problem is to use i
 The ILP constrained problem will be to select those links on which to forward packets while minimizing the overall number of links used, and making sure to satisfy the latency, jitter and reliability requirements of the given flow.
 
 \begin{gather}
-\text{Minimize } \sum_{i=1}^{P}x_i \\this
+\text{Minimize } \sum_{i=1}^{P}x_i \\
 \text{Where, } d(i) * x_i\le D \\
 j(i) * x_i \le J \\
 \text{and }1 - \prod_{i=1}^{P}{ ( 1- r(i) * x_i ) } \ge R  \\
