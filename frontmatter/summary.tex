@@ -6,25 +6,7 @@
 \addcontentsline{toc}{section}{Abstract}
 \section*{Abstract}
 
-The growth of computational power and the increasing importance of digital data in scientific research has led to greater demand for computational resources  by users who aim to process large datasets. Particularly in the natural sciences it has become common for scientists to break down their computing needs into a sequence of smaller tasks, a so called workflow. These workflows can then be run on a variety of different execution platforms, depending on the users needs.
-
-Since workflows are composed of segregated inter-dependent tasks which can run independently of each other, the individual tasks which make up a workflow can be assigned a fraction of the computational resources available to the entire execution platform, and doing so intelligently could improve efficiency and performance.
-
-This thesis aims to investigate how reinforcement learning can be applied to the allocation of resources to individual tasks in order to choose more efficient allocations. A reinforcement learning solution will be integrated into the source code of a popular scientific workflow management system and tested with several common bioinformatic workflows. Two different approaches (Gradient Bandits and Q-learning) will be used and their performance will be compared with both that of the default resource allocations and that of an approach based on \cite{tovarjob,FeedbackBasedAllocation} which uses a feedback loop.
-
-Ultimately the approaches presented in this thesis outperform the workflow's default configurations with regards to both memory and CPU efficiency: the q-learning approach assigned 7\% less CPU hours, 31\% less memory and was 7\% faster, whereas the gradient bandit approach assigned 42\% less CPU hours, 80\% less memory and was only 4\% slower. The feedback loop approach assigned 13\% less CPU hours, 87\% less memory and was 7\% faster and thus performed worse than the gradient bandits with regards to CPU efficiency but better in terms of memory and speed. 
-
-%%=========================================
-%\cleardoublepage
-\addcontentsline{toc}{section}{Zusammenfassung}
-\section*{Zusammenfassung}
-
-Die Relevanz von digitalen Daten und die damit verbundene Analyse von grossen Datensätzen in der wissenschaftlichen Forschung wächst kontinuierlich, und der Nutzerbedarf an Rechenressourcen steigt mit. Besonders in den Naturwissenschaften ist es üblich, dass Wissenschaftler die Analyse dieser Daten in kleinere Arbeitspakete aufteilen, so genannten Tasks, und die gesamte Sequenz dieser Tasks wird als Workflow bezeichnet. Die Workflows bestehen aus verschiedenen, eigenständigen Tasks die unabhängig voneinander ausgeführt werden können, daher muss ihnen nur ein Bruchteil der Rechenressourcen des Plattforms auf dem sie ausgeführt werden zugewiesen werden.  Durch intelligente Allokationen ermöglicht dies eine größere Effizienz und Leistung der Workflows.  
-
-Die Forschungsfrage dieser Arbeit beinhaltet wie und mit welchem Effekt Reinforcement Learning für die Allokation von Rechenressourcen zu den Tasks eines Workflows angewandt werden kann.  Hierzu werden zwei verschiedene Ansätze (Q-learning und Gradient Bandits) in den Quellcode einer Workflow Verwaltungssoftware integriert und mit fünf Bioinformatik Workflows getestet. Diese Ergebnisse werden verglichen mit der Leistung der Workflows unter normalen Konfigurationen, und einem Ansatz mit Hilfe von Rückkopplungsschleifen, der auf \cite{tovarjob,FeedbackBasedAllocation} basiert.
-
-Die in dieser Arbeit entwickelten Ansätze zeigten eine bessere Leistung als die Workflows mit voreingestellten Allokationen, sowohl im Bezug auf die Arbeitsspeichernutzung, als auch auf die CPU Nutzung.  Der q-learning Ansatz allozierte 7\% weniger CPU Stunden, 31\% weniger Arbeitsspeicher und die Rechenleistung war 7\% schneller. Der gradient bandit Ansatz allozierte 42\% weniger CPU Stunden, 80\% weniger Arbeitsspeicher und die Rechenleistung war nur 4\% langsamer. Letztlich hat der Ansatz mit der Rückkopplungsschleife 13\% weniger CPU Stunden und 87\% weniger Arbeitsspeicher alloziert und war 7\% schneller, und damit weniger effizient mit seiner CPU Allokationen als die gradient bandits aber besser in Bezug auf Arbeitsspeicher und Geschwindigkeit.
-
+TODO
 %\newpage
 %\addcontentsline{toc}{section}{Zusammenfassung}
 %\section*{Zusammenfassung}

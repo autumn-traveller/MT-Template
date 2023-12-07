@@ -4,141 +4,133 @@
 \chapter{Approach}
 \label{cha:approach}
 
-
-This chapter covers how a solution was integrated into a scientific workflow manager, as well as the specific parameters and reward functions of the reinforcement learning agents. In section \ref{sec:integration} the software architecture of the approach and its integration with the nextflow source code will be discussed, and then in \ref{sec:gradient_bandits} and \ref{sec:q_agent} respectively the details of the gradient bandit and the q-learning agents will be considered. 
+To discuss the solution implemented for this thesis requires a review of, firstly, the requirements contained in the problem statement, and, secondly, a description of both the decisions made as well as the process behind making those decisions. To that extent, this chapter will discuss, the components needed in order to address the problem statement. It will try to discuss not only what decisions were made, but also, crucially, what decisions were \textit{not} made, and why. The first section will begin with the fundamental nature of the solution's architecture, thereafter a review of the design requirements which arise from the Deterministic Networking specification will follow, finally the precise nature of the solution's internal workings will be presented.
 
 %%=========================================
-\section{Integrating a Solution into a Workflow Manager}
-\label{sec:integration}
+\section{Initial Plan}
+\label{sec:approach:plan}
 
-Nextflow \cite{nextflow} is a robust scientific workflow management system written primarily in groovy. It supports various execution platforms and has a large variety of tools to help users analyze the performance of their workflows. Nextflow is free open source software and for this thesis a fork of the 20.12.0 version was used \footnote{https://git.tu-berlin.de/zunkernicolas/nextflow-extension}. In order to integrate a reinforcement learning approach with the nextflow source code a simple structure was designed which externalised the storage of data from previous tasks and workflows so that when a task needed to be scheduled the reinforcement learning agent could retrieve historical data about the task from a database to inform its decision. The structure can be seen in the following figure.
+At the outset of this thesis it was decided to use a Control User Plane split. The packet processing and forwarding is performed in the user plane, and the control plane makes the high level decisions about which packets to send where, and in this case, on which outgoing interface to send them. The data plane is kept simple and only performs the time critical packet processing, and blindly follows the instructions of the control plane. This type of architecture is very common in modern software-based networks, e.g. OpenFlow, the Evolved Packet Core (from LTE), and the 5G core all implement this kind of split.
 
-\begin{figure}[ht]
-    \centering
-        \includegraphics[width=0.8\textwidth]{fig/implementation_diagram.png}
-        \caption{High Level Design: Integration of a Reinforcement-Learning Agent into Nextflow}
-        \label{fig:implementation}
-\end{figure}
-
-Although the code for the reinforcement learning agents is logically a part of nextflow, when discussing the above design they will be referenced separately. The interaction between nextflow, the agents, and the external actors (the user, the database and the execution platform) is as follows. First, before a task is ready to be scheduled it is sent to a reinforcement-learning agent specific to that task, for the purposes of this thesis that was either a q-learning agent or a gradient bandit. Next, the task’s agent would then retrieve historical performance data and any other relevant data (i.e. what state the agent was last in) from the database. This database is external to nextflow and the creation and management of this database is not performed by nextflow or the agent which only use the database to save or read data beyond a workflow’s lifetime. Then, using the data, the agent selects a new resource allocation for the task and overwrites the task’s default configuration. After this, nextflow uses its custom executor for the given execution platform to prepare the task and pass it on to that platform. The task is then executed on the platform. It is important to note that the execution platform will also have its own system for managing, scheduling and executing jobs and processes. As the task is executed nextflow’s tracer module will gather performance data, i.e. peak CPU usage and peak RSS \footnote{https://www.nextflow.io/docs/}. Finally, once the task is finished all of this data is stored in the database for the agent to use the next time the task comes. It is important to note that there is one agent for each unique task. These agents are called whenever their task needs to be executed and they use the database to receive rewards for their previous actions.
-
-Now that the structure of the agent’s environment has been explained and the relationship between collecting data and assigning a task resources is clear, it is time to delve into the specific approaches tried.
-
-\section{Gradient Bandits}
-\label{sec:gradient_bandits}
-
-In the course of this thesis gradient bandits were used to allocate both CPUs and memory. The way they did this will be explained here.
-
-\subsection{CPU Bandit}
-\label{sub:cpu_bandit}
-
-\subsubsection{Design}
-\label{subsub:bandit1_design}
-
-The CPU Bandit, as it was nicknamed, had a very simple set of actions to choose from which were based on the number of CPUs available to the system. The bandit then learned how many CPUs to allocate to its task. Its reward was a very straightforward function:
-
-\begin{equation}
-\label{bandit1_reward}
-reward = -t\times(1+cpus - cpu\_usage/100)
-\end{equation}
+%%=========================================
+\section{Architectural Components Required for Deterministic Multipath Backhaul in a 5G Campus Environment}
+\label{sec:approach:req}
 
 
-In this equation $cpu\_usage$ is a value in percent of the number of single core CPUs used by the task. If a task were assigned 4 CPUs and only effectively used two of them then $cpu\_usage$ would be $200$\%. $cpus$ is the number of CPUs assigned to the task and $t$ is how long the task took to run. Put in other words this equation punishes the agent with a negative reward equal to the amount of time it ran plus the unused CPU time (execution time multiplied by the number of unused CPUs). The idea is to provide an incentive for the agent to try to minimise the amount of time where any of the allocated CPU’s are not being used, and by punishing it with the amount of time that the task ran for, the agent is also encouraged to try to reduce the amount of time taken for the task to complete. This also means that, should a task have 100\% usage then its penalty is not 0 but is just the execution time. The reason for including time in the reward function is that if the agent has no concept of time it will always allocate the least amount of resources possible, since that is guaranteed to minimise the amount of resources wasted, and ultimately the tasks and their workflows would all be incredibly slow. 
+Deterministic networks have been discussed in the previous section. In order to guarantee determinism the IETF DetNet working group has proposed an architecture for determinism over IP networks \cite{detnet-arch}. Their specification identifies four key mechanisms for guaranteeing the determinism of a flow: 1) elimination of contention loss, 2) jitter reduction, 3) service protection, 4) explicit routes. Since the 5G campus environment may need to use the infrastructure of other operators this rules out the usage of explicit routes. A key difference between deterministic networks and 5G campus backhaul is that the operator may not control all the links between nodes, and that there are only two nodes in the network that are definitely under the administrator's control- the core and the edge UPF's and/or WAN connectors. In such a scenario the network is less like a network and more like a client - server application with multiple paths between the client and the server.
 
-\subsubsection{Picking the Right Step Size}
-\label{subsub:const_stepsize}
-The most pressing issue encountered with the CPU bandit approach was related to the step size. The initial step size $\alpha$ was $0.1$, which would be an appropriate step size for a bounded reward function with a mean reward that is around 10 or is known to have a standard deviation less than that (these values are based on the example given in \cite{sutton_barto} where they use a step size of 0.1 for a reward function with a statistical mean of 4). However the reward function used in \ref{bandit1_reward} has the bounds [ $-time \times (cpus+1)$ , $-time$ ] and as such is unbounded, since $time$ can be arbitrarily large and the standard deviation which was observed for the rewards was also too large. Therefore whenever tasks had a runtime $> 10$ seconds, $\alpha$ was too large. 
+\subsection{Elimination of Contention Loss}
 
-The danger in using a constant step size which is too large for the reward function is that when the bandit receives a reward which is considerably larger than the previous average the “step” taken in the direction of that action will also be too large and the bandits preferences will be updated such that the given action is always preferred and no other actions are tried any more. This causes the bandit to cease exploration too early. This effect was a common problem for tasks which took longer than 20 seconds to complete and was especially pronounced for tasks with runtimes of 100 seconds and more.  For these tasks the inherent volatility of the reward function relative to a step size of 0.1 meant that the bandits were converging very early and often had not explored the other actions at all. To provide a concrete example: if a bandit’s third allocation of CPUs received a reward of -150 and the first two allocations had had an average reward of -200, then for a step size of 0.1 the preference for the new allocation would increase by approximately $50\times0.1=5$. Now because of the exponential nature of the soft max distribution function used on the preferences, the probability of picking that action would increase by a large amount and then the bandit is in danger of converging to that allocation without any more exploration. This is best demonstrated graphically, as can be seen in figures \ref{fig:sub1} and \ref{fig:sub2}.
+Elimination of contention loss can be achieved by using a traffic shaper and/or rate limiter, and the ingress to any DetNet domain \textbf{must} apply such a function. For the WAN Connector therefore a traffic shaper must also be applied to the traffic on ingress, from the RAN, before it is sent across the backhaul links. Since the implementation of a traffic shaper is beyond the scope of this thesis a choice must be made based on the existing solutions. The traffic control subsystem in the linux kernel (TC) provides several implementations of different algorithms for both rate limiting and traffic shaping. Some of these algorithms have already been discussed in the previous section. For the purposes of this solution several algorithms were considered feasible, namely HTB, HFSC, taprio, CAKE, and FQ\_CoDel.
 
-\begin{figure}[ht]
-\centering
-\begin{subfigure}{.5\textwidth}
-  %\centering
-  \includegraphics[width=\textwidth,height=\textwidth]{fig/old_UNICYCLER.png}
-  \caption{Bandit 1}
-  \label{fig:sub1}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
- % \centering
-  \includegraphics[width=\textwidth,height=\textwidth]{fig/old_BOWTIE2.png}
-  \caption{Bandit 2}
-  \label{fig:sub2}
-\end{subfigure}
-\caption{Example of Two Bandits Converging Too Fast}
-%\label{fig:old_bandits}
-\end{figure}
+For HTB and HFSC, due to the implementation of these algorithms in the linux tc subsystem, integrating them within the context of this solution would require filters for each flow. This is not necessarily a hindrance yet, however it would introduce additional overhead upon the creation and/or addition of each new flow. Perhaps more importantly, the implementation of the HTB algorithm provides no means for fair queuing. This means that while it is not possible for greedy and/or malicious flows to use up the bandwidth of other flows (because HTB caps bandwidth), the greedy flows can cause other flows to experience higher latency. The HFSC algorithm improves on this by offering both bandwidth and delay guarantees. However this makes it more difficult to configure.
 
-These figures show two gradient bandits which were exhibiting the behaviour described above. Each figure is made up of 2 graphs which display the action chosen by the bandit in the top graph and the probabilities for all of the actions in the bottom graph. As can be seen in the two examples, after receiving a relatively large reward, the agent’s probability of choosing a given action rises far too quickly and no other actions are attempted thereafter. This is occurring because the step taken by the bandit in the direction of a single action’s preference is too large and the resulting probability of choosing that action grows so much that no other actions are explored any more. 
+Another feasible option available in linux TC would be the time aware priority queuing (taprio). This queuing discipline provides scheduled gates for specific traffic classes. It could be used to schedule different flows, and/or different priorities, and thus provide a form of prioritization, and, to an extent, traffic shaping. Flows can be assigned different windows (or assigned windows based on their priority) and congestion due to a greedy flow is avoided. However one issue is that taprio fails to provide fair queuing, and thus would need to be configured and possibly adapted as new flows are added and removed, depending on their priority. Greedy flows of the same priority would have to fight each other to use the bandwidth available in their assigned window.
 
-The solution to this problem is to adjust the step size so that it is not a constant value but is instead a function which uses the average time that it usually takes the task to complete. This way tasks which have longer average runtimes are given smaller step sizes. The new value for $\alpha$ is thus $1/avg(time)$.
+Lastly there are FQ\_CoDel and CAKE. Both provide fair queuing as well as active queue management, which means flows are less likely to experience loss due to congestion, particularly congestion caused by one particularly greedy flow. Since the CAKE algorithm was originally designed for routers in WLAN networks, this may prove to be loosely analogous to a 5G campus network (consider the User Equipment as the Stations, and the Base Station as the Access Point). CAKE also allows the use of priority bins, which fits well with the nature of 5G traffic, where different flows have different priorities. Finally, on a practical level, the implementation of CAKE in the linux kernel uses the kernel's "skb\_flow\_dissector" which exposes a hook point for eBPF \cite{eBPF} programs. Specifically within a 5G context, this could allow one to attach an eBPF program to allow CAKE to peek inside of GTP tunnels, and differentiate the flows within them. For all the other algorithms mentioned so far, all of the GTP packets would appear to belong to the same flow, and thus none of these algorithms would work as expected on the flows being tunneled through GTP. This is ultimately the strongest case that can be made for any of the options listed so far. TC does have one other algorithm which hooks into the "skb\_flow\_dissector", namely the CHOKe qdisc, which does perform queue management, however fails to provide fair queuing.
 
-\begin{figure}[ht]
-\centering
-\begin{subfigure}{.5\textwidth}
-  %\centering
-  \includegraphics[width=\textwidth,height=\textwidth]{fig/UNICYCLER.png}
-  \caption{Bandit 1}
-  \label{fig:sub3}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
- % \centering
-  \includegraphics[width=\textwidth,height=\textwidth]{fig/BOWTIE2.png}
-  \caption{Bandit 2}
-  \label{fig:sub4}
-\end{subfigure}
-\caption{Bandits with a Step Size Based on Their Historical Average Execution Time}
-\label{fig:fixed_bandits}
-\end{figure}
+\subsection{Jitter Reduction and Latency Guarantees}
 
-The next two figures \ref{fig:sub3}, \ref{fig:sub4} show the same two tasks and their bandits but with the new step size. As can be seen the exploration phase is considerably longer and many different CPU allocations (actions) are tried before settling on one. Specifically in the case of the \textit{UNICYCLER} task’s bandit we can see that although allocating 3 CPUs seems to develop a strong preference early on (perhaps because it performed abnormally well once or perhaps because it genuinely is the best performing allocation) it does not become so preferred as to be dominant until much later and until that point the bandit continued to try other options.
+In the Deterministic Networking Architecture specification it is recommended to adopt time synchronization as well as sending time of execution fields in the application packets, in order to achieve jitter reduction. To this extent the PTP protocol may serve well, especially since there is an existing implementation, the linuxptp project, which extends it to work over IP networks. As for the time of execution fields, it may be possible to place these in a GTP header, or to combine them with timestamping.
 
-It should be noted that these changes mean that for optimal performance of the bandits there should already be some historical data available about the task’s and their runtimes. It is not a necessity because over time the bandit can gather this data itself, but it is preferable.
+Latency guarantees are not mentioned within the specification but they are important for the 5G campus setting. Specifically when backhaul options may include satellite links it becomes important to consider latencies. Additionally, in a multipath setting, latency can be a useful criteria for selecting between links, and guaranteeing latency becomes easier to do when it is possible to switch links should one of them start to experience greater latency than before.
 
-\subsection{Memory Bandit}
-\label{sub:mem_bandit}
-The other gradient bandit approach used for assigning resources to tasks was called the memory bandit and its available actions were memory assignments. Beyond the obvious, the memory bandit was different from the CPU bandit in two respects. Firstly, the amount of memory available is several order of magnitudes larger than the amount of cpus. Thus, in order to limit the number of available actions to a manageable amount, the original amount of memory assigned to the task $m$ (in the default configuration) had to be split up into $n$ chunks each of size $c=m/n$. The bandit is then presented $a$ actions, each of which assigns $a\times c$ amounts of memory to the task. $a$ can be chosen as $1.5 \times n$ to give a good balance between considering allocations that are larger and smaller than the default configuration, however since it is known in advance that user estimates are usually quite poor one could also choose $a < n$ to encourage memory efficiency. In addition to this, by choosing larger or smaller $n$ values the size of the memory chunks can be adjusted. Secondly, and this is the biggest difference between the two bandits, a task which is assigned too little memory and overuses it will be killed. This means that there must be a special penalty for such cases.
+\subsection{Service Protection}
 
-The reward function used for the memory bandit, after assigning $memory$ bytes of memory is as follows:
+In order to protect against equipment failure, may be recommendable to perform packet duplication and/or encoding. The specification speaks of both duplication of flows, and network coding \cite{network-coding}. This can be a clever solution, however like other parts of the Deterministic Networking specifications, Network Coding requires control over and co-ordination between all the nodes in the network. However to guard against equipment failure and/or packet loss, duplication does provide an option. So too does forward error correction (FEC). Many FEC schemes work on a continuous stream of bytes, providing correction for bit errors, as opposed to correcting the loss of entire packets. There are schemes which address this, fountain codes - such as Raptor \cite{raptor}, but unfortunately their ecosystem is not as developed and because of the complexity involved in implementing them efficiently there are relatively few freely available projects or libraries which can be used to encode packets using such a scheme. For reference, \footnote{https://aff3ct.github.io/fec\_libraries.html} mainaints a list of C\\C++ FEC libraries. Even if it were more feasible to integrate FEC into the backhaul solution it bears questioning how much benefit it brings. FEC is very powerful in situations with consistently lossy links, however internet links tend t experience loss in bursts, as opposed to consistently of the same degree. To this extent it may make more sense to duplicate those flows which require a high degree of reliability. However flow duplication means a packet ordering and elimination function will be required, to eliminate those packets which arrive twice, and to re-order other ones.
 
-\[ reward = 
-\begin{cases}
-   % \frac{x^2-x}{x},& \text{if } x\geq 1\\
-    -2\times memory/c,& \text{if the task ran out of memory}\\
-    -1 \times unused\_chunks              & \text{otherwise}
-\end{cases}
-\]
+TODO!! : detnet POF algorithm
 
-Where $unused\_chunks = (memory - peak\_rss) / c$ and $peak\_rss$ is the peak resident set size (RSS), in bytes, of the task during its execution.
+\subsection{Multipath Considerations}
 
-An obvious alternative for this function is to simply use the memory usage: $reward = peak\_rss/mem$, and $\alpha = 0.01$ since the reward function’s range is [0,100]. However during testing this was found to be too small for tasks which have a low memory footprint. For example a task which uses 1\% of the assigned memory when assigned $n$ chunks, and thus receives a reward of 1\%, will only yield a maximum reward of $n$\% for the optimal allocation of just one memory chunk and for such small differences a gradient bandit will struggle to recognize the superior choice, even though it should be obvious. This is especially damaging to performance because these low usage tasks are precisely the ones where memory efficiency can be optimized the most and as such the reward function was changed to one which penalises the agent for the amount of unused memory. Of course to avoid the problem the CPU bandit had with its step size, the amount of unused memory in bytes could not be used and therefore the number of unused memory chunks was used instead. To return to the example of a task with 1\% usage that task’s rewards would now be $-n$ at worst and $-1$ at best, which makes it much easier for the bandit to determine good allocations. Finally in the case where a task has been killed the penalty is equal to double the number of memory chunks assigned because the agent must (at the very least) assign the same amount of memory again or must assign even more memory.
+While the previous subsections have all considered requirements for determinism in an IP network, the issue of multipathing still remains. For a component which is backhauling over multiple links in an IP networks this means link and/or path selection is required. Traditionally, routers select links primarily based on their ability to route the packet to the destination, and secondarily based on various metrics, which can be defined by the administrator. For the WAN Connector's scenario routing considerations are not made, its purpose is to backhaul the traffic from the RAN / Edge to the Core, where the network's own internet gateway can perform the routing.
 
-The actual implementation of the memory bandit is slightly adjusted so that whenever a task fails with one memory allocation and is retried with a new one, the new allocation must be greater than the previous one. If the bandit does pick a smaller allocation then it is ignored and the new allocation is either doubled or the default configuration for that task is used (if double the new allocation is also less than the failed allocation). This prevents the workflow from being broken off if a given task fails too many times due to repeated poor allocations.
+At this point it is crucial to differentiate, again, between multihoming and multipathing. Multihomed hosts are able to select one of many links for their outgoing traffic destined to the same source. In multipathing the same link may lead to multiple paths to \textit{different} destinations. Multipathing over the internet requires complex data collection about all the routers in between the source and the destination, for example \cite{multipath}. 
 
-Finally, to return to a discussion of step size similar to that in \ref{subsub:const_stepsize}, the memory bandit can be assigned a constant step size $\alpha = 1/n$. This is is because for $n$ memory chunks, the bandits reward function is bounded by [$-n$, 0]. 
+The goal of this thesis is of course to use the link and/or path selection to provide determinism for the flows being backhauled. To this extent then, the link selection algorithm must attempt to forward flows over paths which can provide at worst the maximum allowed latency and jitter, as well as meeting the minimum reliability. Here it is worth noting that while duplication cannot really be used to guarantee latency, it can be used to improve reliability since a flow which is duplicated across two paths is far less likely to experience packet loss for the same exact packet on both paths.
+
+\subsection{Summary of Requirements}
 
 
-\section{Q-learning Agent}
-\label{sec:q_agent}
+Looking back on the previous subsections, the following points (in no particular order of priority) were identified as mandatory for a deterministic backhaul solution: 1) traffic shaping, 2) path selection according to jitter and latency requirements, 3) service protection (i.e. via packet duplication), 4) packet ordering and de-duplication, and 5) time synchronization. The ways in which these can be addressed, or quite simply the way in which they were implemented, will be discussed in the following section
 
-Similar to the approach with the gradient bandits, there was one q-learning agent per unique task. The q-learning agent’s state was always the current allocation of CPU and memory for the given task, and as its set of actions it could choose between incrementing or decrementing the amount of CPUs or memory, or it could do nothing. To limit the state space the maximum and minimum number of CPUs and memory as well as the amount by which they were incremented or decremented was based on the default allocation given to the task by the developers of the workflow (provided they did not exceed the resources of the execution platform). When the task was scheduled by the agent for the first time it would start in the default configuration’s state. Just like the memory bandit in section \ref{sub:mem_bandit} the possible memory states of the reinforcement learning agent are also chunks of memory. 
+%%=========================================
+\section{Overview of the WAN Connector's Features and Components}
+\label{sec:approach:arch}
 
-For the q-learning agent a different reward function was used than for the CPU bandit, primarily because it also had to incorporate memory but also as part of an attempt to experiment with different reward functions and approaches. 
+\subsection{Path Selection Algorithm}
 
-\begin{equation}
-\label{q_agent_1_reward}
-r = -max(0.1,unused\_cpus) \times (t/avg\_t) \times (mem\times (1 - max(0.75,mem\_use)))
-\end{equation}
+Meeting the various requirements - jitter, latency, and delay - of a flow can be formulated as a multi-constrained QoS problem. Solving such a multi-constrained QoS problem via path selection is a binary optimization problem. The optimization problem can be posed as such: "select those paths on which to forward packets while making sure to satisfy the latency, jitter and reliability requirements of the given flow, and minimizing the overall weight of the paths used". The mathematical definition is as follows:
 
-Here the $mem$ variable refers to the memory allocated to the process and $mem\_use$ is the value of of the peak RSS of the task divided by the memory assigned to it. $avg\_t$ is a constant value which is determined at runtime based on the historical average execution time for the task. Lastly, $unused\_cpus = cpus - cpu\_usage/100$ where $cpus$ and $cpu\_usage$ are the same as in \ref{bandit1_reward}. 
+\begin{gather}
+\text{Minimize } \sum_{i=1}^{P}w(x_i) \\
+\text{Where,   } d(i) * x_i\le D \\
+j(i) * x_i \le J \\
+1 - \prod_{i=1}^{P}{ ( 1- r(i) * x_i ) } \ge R  \\
+\text{for } x_i \in \{0,1\}
+\end{gather}
 
-Since division by the task’s average time is incorporated into the reward function it did not need to be incorporated into the step size as with the gradient bandit (see \ref{subsub:const_stepsize}) and the issues associated with that were avoided. This function is effectively a product of the number of unused CPUs, the slow-down factor and the amount of unused memory. However there are some slight modifications. The $max$ function is used to set an artificial floor for the penalty incurred by the unused CPUs and unused memory. Tasks which use more than 90\% of the available CPUs are given the same reward as tasks which use exactly 90\% in an attempt to prevent the agent from deciding to assign each task 1 CPU in order to minimise the number of unused CPUs. Additionally the floor for unused memory is capped at 25\% in a similar manner. This is done to discourage the agent from allocating too little memory because tasks which use too much memory will of course be killed and have to start over, which can have a detrimental effect on performance. This reward function is of course negated in order to turn it into a penalty function so that the agent will seek to minimise its penalty by minimising the number of unused CPUs, the slowdown and the amount of unused memory.
+Here the variables $D$, $J$, and $R$ are the flow's delay, jitter, and reliability requirements, while the functions $d(i)$, $j(i)$, $r(i)$, $w(i)$ are the estimated delay, jitter, reliability, and weight of link $i$. The predicted values will usually just be the latest measurement, as recommended in \cite{akella2008performance}, however there is room here to use more advanced metrics to predict the future link quality and thus perform preemptive path switching. The total number of paths is $P$. The $x_i$ variable indicates whether or not link $i$ shall be used. If a solution is found, then the flow's packets will be forwarded on each link $i$ where $x_i = 1$, and if no solution can be found which satisfies these conditions then the flow is rejected because its QoS cannot be guaranteed.
 
-The q-learning agent also has 3 other parameters- the step size $\alpha$, epsilon $\epsilon$ and the discount $\gamma$. Step size was set to 0.1 and the discount was 1.0. Epsilon is adjusted over time- at first it is 0.5, to encourage exploration, then after 50 runs it is decreased to 0.25 and after 100 runs it is 0.1 to discourage exploration but leave room for the bandit to still occasionally try other actions and visit different states.
+It is worth noting that solving such problems is NP-Hard \cite{tsp-np-hard}. However this hardness arises primarily because of line 3.1, the equation for reliability (also the only non-linear equation). Due to this equation one must consider every possible combination of paths on which to forward, and the complexity is $O(2^n)$. This means, even though akella et. al \cite{akella2003measurement} have shown that multihomed approaches experience diminishing returns after more than 4 links, attempting to brute force the solution by limiting the number of paths to 4 still yields a very large problem space - in the worst case both WAN connectors could have 4 outgoing paths, leading to 16 possible paths and thus 65536 possible combinations to consider. In order to further avoid the combinatorial explosion the problem needs to be parameterized even more. The first logical parameterization has already taken place by limiting the number of paths. This can be expanded on by limiting duplication to only take place over disjoint interfaces. No duplication on the same outgoing interface. The reasoning behind this is that in a geographically distributed Campus 5G environment, and especially for environments featuring wireless backhaul (e.g. satellite), it is more likely that a link's reliability is most affected by the over the air transmission on the first hop. By performing this parameterization the problem space shrinks considerably, to just $2^4$ possible combinations of outgoing paths, but because certain paths going out on the same interface are ignored the optimality of the overall solution is gone. This is an acceptable trade off for quick computation, and reasonably strong guarantees on reliability. When choosing from paths to include from a set of paths using the same outgoing link, only the path with the greatest reliability to weight ratio is taken into consideration.
 
-\subsubsection{Exploring the State-Action Space}
-\label{subsub:states}
+\subsection{Packet Ordering and De-Duplication Function}
 
-It should be noted here that unlike the gradient bandits from before, which had to decide from $c$ or $n$ number of actions for the CPU and memory bandits respectively, the q-learning agent must learn the value function for $(c-2)*((m-2)*a + 2*(a-1)) + 2*((m-2)*(a-1) + 2*(a-2))$ state-action combinations. Here $c$ is the number of possible CPU states, $m$ is the number of possible memory states and $a=5$ is the number of possible actions. Now since the q-learning algorithm from \ref{alg:q-learning} needs to try each action in every state combination at least once, and explores with probability $\epsilon$ then for arbitrary examples of $c=4$ and $m=3$ it will take, at the very least, 46 different runs just to have tried every action in every state once. This shows how much more complex the q-learning approach is than the gradient bandit approaches. Ultimately however the theoretical benefit posed by q-learning is that when the agent learns, for example, not to increment the amount of CPUs when in state $s$ (where $s$ is also the number of CPUs currently allocated), the agent is thus also learning to avoid all states/allocations $\{s_c \in S$ $|$ $s_c > s\}$ which allocate more CPUs than $s$. While this seems trivial, the gradient bandit is unable to see such connections and cannot tell that a task which has low CPU usage for $s$ CPUs can be expected to have even lower usage for $s_c > s$ CPUs. 
+Since it is possible for flows to be duplicated across multiple paths, it becomes a necessity to have a packet ordering and elimination function. To be able to re-order and de-duplicate packets means that their sequence numbers need to be tracked. This thesis' implementation will track the sequence number on a per flow basis, using the GTP "sequence number" field. For the packet ordering algorithm the Deterministic Networking Working group provides both a basic and an advanced algorithm in their specification \cite{detnet-pof}. This thesis uses the basic algorithm.
+
+\subsection{Internal Architecture}
+
+\subsubsection{Control - Data Plane Communication}
+
+A protocol is desired which can provide reliable communication over multiple paths in order to communicate between the control plane, where the statistics are collected, flows are added or removed, and the multipath decisions are made, and the data plane. This is crucial, since in a geographically distributed campus 5G deployment it is unlikely that there will be a separate management or control network which uses different underlying network infrastructure than the data plane. Therefore link failure, as well as packet loss, on the link being used by the control plane must either be avoided or protected against. To this extent there are two feasible options - either multipath TCP or SCTP. SCTP supports multihoming and intelligent failover to the multihomed link, and is slightly easier to manage and configure than multipath TCP, which is why it was chosen for the data plane control plane interactions.
+
+\subsubsection{GTP Tunneling and Custom Header Extension}
+
+The tunneling protocol used between the two data plane instances will  be GTP \cite{GTP-spec} version 1. The specification for GTP allows for the use of sequence numbers, as well as the use of extension headers. For the data plane communication there will always be an additional custom header sent which includes a timestamp taken by the sender. The timestamp is taken in microseconds. For the timestamp there are several options available within linux. The atomic clock is used in this implementation because it does not have leap seconds, and so it is a monotonic function, which is an important guarantee for time sensitive applications. Normally, in linux on 64 bit systems, a timestamp takes up 16 bytes and consists of 8 bytes for the time in seconds since the epoch, and another 8 bytes for the nanoseconds. To reduce the footprint of the timestamp in the header, the seconds are represented as an 8 bytes value, thus wrapping around the interval $[0,255]$. The microseconds have a maximum value of $10^6$ and can be represented with just 24 bits. For Wide Area Networks and internet connections usually the latencies are on the order of milliseconds and as such microsecond precision is deemed to be sufficient.
+
+\subsubsection{Metric Collection}
+
+To be able to intelligently switch flows between paths, and to be able to know when this is required, it is necessary to collect the relevant metrics about latency, jitter, bandwidth usage, as well as packet loss. Packet loss can be detected via the sequence numbers, while delay and jitter can be calculated using the timestamps passed along in the GTP headers. These metrics are periodically reported to the control plane so that it can make its decisions on up to date data. Keeping a healthy overview over the state of each path requires periodic probing on these paths. This is especially important for detecting when paths become viable again, since these paths will not have any traffic on them while they are considered down, or if they have experienced high latency and/or jitter recently. The probes are sent once per period of reporting so that they have a minimal impact on the bandwidth usage.
+
+\subsubsection{Flow Descriptions, Flows, and Hashing}
+
+Incoming packets need to be quickly mapped to their respective flows. It is common in network environments to perform flow hashing, in order to quickly lookup which flow incoming packets belong to. This approach makes sense here too. However, since 5G flow descriptions can apply to various IP and port ranges as well as matching based on the transport layer protocol it is not possible to hash an incoming flow and obtain the same hash as the flow description. Furthermore it is possible for a flow to match multiple different flow descriptions. In these cases usually the first matching flow description is taken. This implies some sort of ordered storage of flow descriptions will be required, as well as a method to quickly match packets to flows. The solution used here is to maintain a simple linked list of the known flow descriptions, and match packets to their flow descriptions, if the packet is unknown. For "known" packets, which have been matched to a flow description, these are hashed and stored in a table, alongside their flow descriptor and a list of paths on which the flow is supposed to be forwarded. This allows quick lookup for every subsequent packet, as well as making it simple to change which paths flows are meant to be forwarded on. One alternative to storing the flow descriptions in a linked list would be to store them in a self-balancing binary tree, such as a red-black tree \cite{red-black-trees}, sorted either by priority or ID or even by the hash value of the flow description. This method would provide a faster lookup of new, "unknown" packets, whose hashes don't yet match to a flow, but since new flows are not such a frequent event the overhead may not be worth the gain in performance.
+
+It is important to make a good choice of a hash function. Ideally it should provide less Since the hashes used are only for the purpose of lookups it makes no sense to pick a hashing algorithm designed for us in cryptography. These algorithms are designed so that it is very difficult to reverse engineer the original value from the hash, and this may often make the computation of the hash more computationally intensive than hash algorithms designed for looking up values. Lastly, for hashing algorithms it is desirable that they provide a healthy distribution, to reduce collisions. Collision reduction can also be affected by choice of hash table size, in general it is usually recommended to use prime number. In this implementation, the MurmurHash algorithm was chosen due to its strong performance for lookup-based hashing. Specifically, the MurmurHash3 \cite{murmurhash3} version was chosen, and since it can generate 32 or 128 bit values - the exact sizes of IPv4 and IPv6 addresses - this simplifies the hashing implementation for IP flows. When a packet comes into the WAN connector it is hashed based on it's destination address, source address, destination port, source port, and finally the transport layer protocol number. If the packet was tunneled with a GTP header, the header is removed and the hash is performed on the tunneled packet, not on the GTP packet.
+
+\subsection{Recap and Overview}
+TODO: figure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

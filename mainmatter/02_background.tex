@@ -1,8 +1,56 @@
 %!TEX root = ../thesis.tex
 
 \cleardoublepage
-\chapter{Background}
+\chapter{Background and Related Work}
 \label{cha:background}
 
-TODO...
+\section{Mobile Networks and Backhaul}
+
+\subsection{Backhaul in 5G}
+
+\subsection{5G and Campus Networks}
+
+
+\section{Multipathing and Multihoming}
+
+\subsection{Collecting Per-Link Metrics}
+
+\subsubsection{Measurement-based Metrics}
+
+In \cite{akella2008performance} the authors collected both passive metrics (looking at response times for outgoing packets), and active measurements (sending ICMP ping, or TCP SYN messages and measuring the response time). Using the passive measurements enabled their multihomed approach to perform well, but when using the active measurements the performance was better. Crucially, the passive measurements worked better over larger sampling periods, because it took longer to get a full overview of all the possible routes. Whereas the active sampling approach acquired it's measurements faster and was thus more effective over smaller sampling intervals.
+
+Considering these results, it is proposed to utilize both active and passive measurements. All three metrics- packet loss, latency, and jitter- will be periodically measured in an active manner. The period over which to perform these measurements is an important design decision for the WAN connector, and it will be met later.
+
+Beyond this, these metrics will also be monitored on a passive basis wherever possible. In order to measure either the time needed (for latency and jitter), or to ascertain that a packet has been lost, a response is required for each outgoing message. This may only be possible for TCP's SYN and SYN ACK messages as well as other protocols which are guaranteed to contain request-response handshakes, and thus complicates the process of passive measurement.
+
+For classical wired links in multihomed scenarios, \cite{tao2004exploring} have observed that one link will generally dominate with regards to latency, but with brief periods where other links' performance is superior. These same authors also note that with regards to packet loss there is far less prevalence of a "dominant" link, and generally the links will perform comparably. Packet loss is also a particularly difficult metric to measure, since most links are highly reliable and when they do experience packet loss it is in bursts \cite{tao2004exploring}. Wireless connections are usually less reliable and may experience more consistent rates of packet loss at the data link layer, however it is opaque from the perspective of the higher layers, which may only perceive it through the jitter and/or latency.
+
+ Ultimately, many of the best performing approaches for predicting packet loss, e.g. Hidden Markov Models \cite{tao2004exploring, bremler2002predicting}, are still somewhat imprecise and inaccurate. These models assume the link is in one of two states, good or bad, and each state has a different probability for packet loss, and there is a transition matrix which represents the probabilities of switching from one state to another. This thesis will also use such a model to try to predict packet loss. 
+
+\subsection{How to Guarantee QoS}
+
+\subsubsection{Limiting Jitter}
+
+The design of an approach which guarantees QoS is also an interesting challenge. One idea to improve jitter when backhauling across multiple links is to duplicate packets and forward them on multiple links, and have the WAN connector on the other end buffer incoming packets and release them at a constant rate. This way, in the event of a packet being lost on one link, the other link is still able to receive it and the delay caused by retransmission is avoided. The downside of this approach is that it guarantees that the latency will always be as slow as the slowest link.
+
+\subsubsection{Low Delays}
+
+For reducing latency it would appear likely that the simplest approach may be a greedy method (as in \cite{goldenberg2004optimizing}, in the online case) which always selects the lowest latency connection. However there is room for nuance here since the connection must not be overloaded and also because certain traffic may have very relaxed latency requirements but use up more bandwidth. This means monitoring the load on any one link will be important. Finally there are also more intelligent approaches, i.e. integer linear programming (used in \cite{huang2008multiconstrained}, and used for the offline case in \cite{goldenberg2004optimizing}) which find an optimal solution satisfying the given requirements.
+
+The timescale over which to use a chosen link is also of interest. In \cite{habib2007improving} the time for which a link should be used is varied based on the predicted qualities of the link. These predictions are made based on past performance.
+
+\subsubsection{Error Rates}
+
+Reliability presents yet another challenge. However in a multihomed scenario it becomes easier to guarantee this via duplication, and/or forward error correction (FEC). For example if a packet flow requires 99\% reliability this can be guaranteed by duplicating packets across two links which are both only 90\% reliable. Alternatively, in such a situation, an FEC configured for 10\% packet loss could be used to pre-code the packets sent across one of the links, and thus increase the reliability to the required level.
+
+Although duplication uses a lot of bandwidth, in order to support 5G's ultra-reliable low latency (URRLC) QoS requirements, which are especially relevant for IIoT applications, it may be the only option for certain traffic flows. Forward Error Correction is an excellent protection against consistently lossy links, however it may fail to be reliable when there are concentrated bursts of dropped packets, which is a more common occurrence in packet switched networks. Either way, the effectivity of FEC in a deterministic backhaul unit is an interesting question which this thesis may also explore.
+
+
+\section{Determinism in Computer Networking}
+
+\subsection{Quality of Service (QoS)}
+
+\subsection{Deterministic Networking Specification}
+
+\subsection{Traffic Shaping}
 

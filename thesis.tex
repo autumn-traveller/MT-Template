@@ -20,6 +20,8 @@
     ]{biblatex}
 \addbibresource{refs.bib}
 
+%\usepackage{hyperref}
+
 \usepackage{setspace}
 \linespread{1.5}
 \setcounter{tocdepth}{2} 
@@ -154,15 +156,15 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 \include{frontmatter/front} % This is the titlepage
 \setcounter{page}{0}
 \pagenumbering{Roman}
-%\include{frontmatter/declaration}
-%\include{frontmatter/acknowledgment}
-%\include{frontmatter/summary}
-%\tableofcontents
+\include{frontmatter/declaration}
+\include{frontmatter/acknowledgment}
+\include{frontmatter/summary}
+\tableofcontents
 
-%\clearpage
-%\phantomsection
-%\addcontentsline{toc}{section}{\listfigurename}
-%\listoffigures
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{\listfigurename}
+\listoffigures
 
 %\clearpage
 %\phantomsection
@@ -181,9 +183,9 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 \setcounter{page}{0}
 \pagenumbering{arabic}
 \include{mainmatter/01_introduction}
-%\include{mainmatter/02_background}
+\include{mainmatter/02_background}
 %\include{mainmatter/03_related_work}
-%\include{mainmatter/04_approach}
+\include{mainmatter/04_approach}
 %\include{mainmatter/05_evaluation}
 %\include{mainmatter/06_conclusion}
 % Include more chapters as required.
@@ -197,8 +199,9 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 
 \cleardoublepage
 \addcontentsline{toc}{chapter}{Bibliography}
+\defbibheading{notonline}{\chapter*{Bibliography}}
 \printbibliography[heading=bibliography]
-%\defbibheading{notonline}{\chapter*{Bibliography}}
+\defbibheading{notonline}{\chapter*{Bibliography}}
 %\printbibliography[heading=notonline, nottype=online]
 %\defbibheading{online}{\chapter*{Bibliography (Online)}}
 %\printbibliography[heading=online, type=online]
