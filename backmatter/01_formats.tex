@@ -1,0 +1,14 @@
+%!TEX root = ../thesis.tex
+
+
+\cleardoublepage
+\chapter{JSON Example}
+\label{appendix:format}
+
+This appendix contains excerpts of the json messages passed between the control plane and the data plane during operation. Listing \ref{lst:stats}shows the format of the messages used for reporting statistics. Listing \ref{lst:flows}shows how the control plane sends updates to the data plane nodes.
+
+\lstinputlisting[style=json, caption={Statistics from Data Plane}, label={lst:flow}]{listings/stats.js}
+
+\lstinputlisting[style=json, caption={New Flow from Control Plane}, label={lst:flow}]{listings/flows.js}
+
+

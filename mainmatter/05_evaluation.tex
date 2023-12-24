@@ -100,6 +100,34 @@ In the next scenario, to analyze the ability of the WAN Connector to achieve the
 
 For the analysis of the performance this time the Oracle approach is defined as choosing, before forwarding any packet, the link with the lowest packet loss ratio. But, crucially, the Oracle is not allowed to duplicate flows across different links. This explains why in figure \ref{fig:loss_bars1} the Oracle is outperformed by the WAN Connector. Indeed, as the graphic shows, it is not possible to achieve the critical flow's required reliability with any of the available links, nor with the Oracle approach. But the WAN Connector is able to achieve it. This speaks to the potency of the flow duplication approach, which is made possible in the optimization equation used to decided on which flows to forward.
 
+\subsection{Impact on Throughput}
+
+
+\begin{figure}[h]
+    \centering
+        \includegraphics[height=0.66\textwidth,width=\textwidth]{fig/tcp_throughput.pdf}
+        \caption{Throughput of a Duplicated Flow}
+        \label{fig:dup_tcp}
+\end{figure}
+
+One of the unfortunate impacts of packet duplication is that it reduces the available bandwidth. It represent a waste of up to 50\% of the available resources, in the worst case, where every flow must be duplicated. Since flows which are being duplicated need to be re-ordered, this means that the FIFO approach for packets cannot be used and instead the packets must pass through a Packet Ordering and Elimination Function (POEF). When a packet arrives out of order the POEF starts to incur significant additional overhead because it must store all packets until the missing packet arrives, or a point is reached at which the stored packets must be dequeued. This point is either the point at which the packets expire, or the queue of out of order packets becomes full. Beyond this, the storing and eventual mass de-queuing of out of order packets can also interfere with the TCP algorithm- thus leading to reduced throughput.
+
+These two effects - the POEF overhead and it's effects on TCP- lead to a very heavily reduced throughput, as can be seen in figure \ref{dup:tcp}. The graph in the figure shows the throughput experienced by a routine TCP download, running over the WAN Connector, and experiencing replication. 
+
+\section{Jitter Based Path Switching}
+
+\begin{figure}[h]
+    \centering
+        \includegraphics[height=0.66\textwidth,width=\textwidth]{fig/jitter_cdf.pdf}
+        \caption{Performance of Jitter Based Path Switching}
+        \label{fig:jitter_cdf}
+\end{figure}
+
+For the final analysis, the jitter must be investigated. For this purpose the simulation data was once again insufficient and must be adapted. This time the standard deviation is calculated for each connection in the simulation. Then these standard deviations are scaled down by diving them by one, two, three, and four, in order to acquire four different links with different jitter characteristics. Finally the scaled values are shuffled. This results in 4 links with variying jitter characteristics, which suffices for the emulation. Each different jitter value is emulated for 10 seconds on the respective link. During the emulation scenario a UDP iperf3 stream is ran at a rate of 3/4ths of the link's capability for 1000 second. iperf3 records jitter each second, which is used to then analyse the performance. Since more than half of the link capacity is being used by the control flows being sent on the links (and not through the WAN Connector), the WAN Connector cannot be tested at the same time. After this the emulation is repeated but the flow is sent only over the WAN Connector. Finally the cumulative distribution of the latencies is plotted in figure \ref{fig:jitter_cdf}. Lastly, the Oracle approach is calculated based on the simulation data. The Oracle approach, like before, displays the theoretical optimal performance- it takes, at each point in time, the link with the lowest jitter. 
+
+As can be seen from the figure, the WAN Connector displays a very disappointing performance. It actually displays an inferior performance to two of the links. The switching is actually causing a worse performance. This is most likely down to insufficient statistics causing poor path selection, because jitter statistics can't be gathered about other paths in this single flow scenario. The probe packets which are periodically sent out do not provide enough data points to accurately determine jitter. While they can give a sufficient baseline for latency calculations, as well as helping to determine if a link is dead or alive, their jitter measurements are not likely to provide a strong insight into the true nature of the link's jitter.
+
+A final note about the figure. In the figure the 1st link actually performs better than the Oracel for most jitter values, before ultimately proving to have the greater maximum jitter values. This occurs because the Oracle is based on the simulation data and not the measurements. Therefore it is likely that the link experienced, for the most part, very low jitter, and thus because there are more data points available than for the Oracle, the percentage of packets below a certain level of jitter is greater, however the maximum values, during those times when the link experiences it's worst jitter are worse.
 
 
 

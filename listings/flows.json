@@ -1,0 +1,85 @@
+{
+  "flowsToAdd": [
+    {
+      "flowID": 1,
+      "priority": 1,
+      "flowDescription": {
+        "src": "10.0.0.31",
+        "srcSubnet": 24,
+        "srcPortStart": 0,
+        "srcPortEnd": 0,
+        "dst": "10.0.3.31",
+        "dstSubnet": 24,
+        "dstPortStart": 0,
+        "dstPortEnd": 0,
+        "protocol": 1,
+        "direction": "in"
+      },
+      "POFmaxDelayMicros": 0,
+      "nForwarding": 1,
+      "decisions": [
+        {
+          "interfaceName": "link3",
+          "remoteEndpoint": {
+            "ip": "10.1.22.21",
+            "port": 2152
+          }
+        }
+      ]
+    },
+    {
+      "flowID": 2,
+      "priority": 1,
+      "flowDescription": {
+        "src": "10.0.0.31",
+        "srcSubnet": 24,
+        "srcPortStart": 0,
+        "srcPortEnd": 0,
+        "dst": "10.0.3.31",
+        "dstSubnet": 24,
+        "dstPortStart": 0,
+        "dstPortEnd": 0,
+        "protocol": 17,
+        "direction": "in"
+      },
+      "POFmaxDelayMicros": 0,
+      "nForwarding": 1,
+      "decisions": [
+        {
+          "interfaceName": "link3",
+          "remoteEndpoint": {
+            "ip": "10.1.22.21",
+            "port": 2152
+          }
+        }
+      ]
+    },
+    {
+      "flowID": 3,
+      "priority": 1,
+      "flowDescription": {
+        "src": "10.0.0.31",
+        "srcSubnet": 24,
+        "srcPortStart": 0,
+        "srcPortEnd": 0,
+        "dst": "10.0.3.31",
+        "dstSubnet": 24,
+        "dstPortStart": 0,
+        "dstPortEnd": 0,
+        "protocol": 6,
+        "direction": "in"
+      },
+      "POFmaxDelayMicros": 0,
+      "nForwarding": 1,
+      "decisions": [
+        {
+          "interfaceName": "link3",
+          "remoteEndpoint": {
+            "ip": "10.1.22.21",
+            "port": 2152
+          }
+        }
+      ]
+    }
+  ]
+}
