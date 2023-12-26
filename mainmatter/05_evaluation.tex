@@ -41,24 +41,37 @@ In the experiment 100 packets are sent per second across each link, as well as 1
 
 \subsection{Accuracy of the Emulation}
 
-Figure \ref{fig:sim_vs_em} shows the comparison between the data observed in the emulation, and the simulation. The "emulated data" in the graphic is taken from the packet flows running over the individual links. The "simulation data" comes from the values recorded during the simulation. Since the emulation data is collected at a rate of 100 packets per second, and runs at 10 times the speed of the simulation, there are 10 times as many data points. This explains why the emulation data appears blurrier.
+Figure \ref{fig:sim_vs_em} shows the comparison between the data observed in the emulation, and the simulation. The "emulated data" in the graphic is measured by the packet flows running over the individual links. The "simulation data" comes from the values recorded during the simulation. Since the emulation data is collected at a rate of 100 packets per second, but runs at 10 times the speed of the simulation, there are 10 times as many data points. This explains why the emulation data appears blurrier- because there is more data for each latency.
 
-\begin{figure}[h]
-    \centering
-        \includegraphics[height=0.66\textwidth,width=\textwidth]{fig/sim_vs_em_compariso.png}
-        \caption{Accuracy of the Emulation}
-        \label{fig:sim_vs_em}
+\begin{figure}
+  \centering
+  \begin{tabular}{@{}c@{}}
+    \includegraphics[width=\linewidth]{fig/simulated_latencies.png} \\[\abovecaptionskip]
+    \small (a) Latencies Recorded in the Simulation
+  \end{tabular}
+
+  \vspace{\floatsep}
+
+  \begin{tabular}{@{}c@{}}
+    \includegraphics[width=\linewidth]{fig/emulated_latencies.png} \\[\abovecaptionskip]
+    \small (b) Emulated Latencies Measured in the Testbed
+  \end{tabular}
+
+  \caption{Comparison of the Simulated and Emulated Latencies}\label{fig:sim_vs_em}
 \end{figure}
+
 
 As the figure shows,  the latencies measured in the testbed mirror those recorded in the simulation, and serve to show that the emulation works, and is able to replicate the changing characteristics of the links during the simulation.
 
 \subsection{Performance Compared to Single Links}
 
-For the latency analysis a flow is defined in the WAN Connector with a minimum round trip time (RTT) of 56 milliseconds. This value is chosen because it is the mean of the mean values of the latencies of the four links in the simulation. The packets being matched 
+For the latency analysis a flow is defined in the WAN Connector with a minimum round trip time (RTT) of 56 milliseconds. This value is chosen because it is the mean of the mean values of the latencies of the four links in the simulation. For the evaluation of the latency based path switching a single flow matching the definition stored in the WAN Connector is backhauled through the WAN Connector at a rate of 100 packets per second. In order to serve as a comparison, identical 100 packet per second flows are sent across the four other links. Finally their latencies are compared, and the latencies measured by the four links are used to calculate the Oracle approach.
+
+The graphics \ref{fig:latency_cdf1} and \ref{fig:latency_cdf1_super_zoomed_in} show a cumulative distribution of the different latencies experienced by the packet flows running over the individual links and the WAN Connector, as well as the performance of the Oracle approach. The Oracle results are purely theoretical. For each packet, it is able to select the best link to forward on, based on that links future characteristics. This approach is calculated by comparing each packet sent by the WAN Connector with the latency that packet \textit{would} experience on any given link and if the latency of the WAN Connector's link would be greater than the minimum value (56 ms), selecting a different link (if one exits) with a lower latency. Since it always picks an optimal path, the Oracle approach provides an upper bound on the best possible performance. In practice it is not possible because it has knowledge of the future, but nonetheless it acts as a very valuable comparison.
 
 \begin{figure}[h]
     \centering
-        \includegraphics[height=0.66\textwidth,width=\textwidth]{fig/latency_cdf1.png}
+        \includegraphics[height=0.8\textwidth,width=\textwidth]{fig/latency_cdf1.png}
         \caption{Cumulative Distribution of the Latencies}
         \label{fig:latency_cdf1}
 \end{figure}
@@ -70,9 +83,8 @@ For the latency analysis a flow is defined in the WAN Connector with a minimum r
         \label{fig:latency_cdf1_super_zoomed_in}
 \end{figure}
 
-The graphics \ref{fig:latency_cdf1} and \ref{fig:latency_cdf1_super_zoomed_in} show a cumulative distribution of the different latencies experienced by the packet flows running over the individual links and the WAN Connector, as well as the performance of the Oracle approach. The Oracle results are purely theoretical. For each packet, it is able to select the best link to forward on, based on that links future characteristics. This approach is calculated by comparing each packet sent by the WAN Connector with the latency that packet \textit{would} experience on any given link and if the latency of the WAN Connector's link would be greater than the minimum value (56 ms), selecting a different link (if one exits) which would have a lower latency. The Oracle approach provides an upper bound on the best possible performance. In practice it is not possible, of course, because it has knowledge of the future. But nonetheless it provides a very valuable comparison.
-
 The results in the figures show that the WAN Connector is able to achieve a superior performance to any of the individual links on their own. This was the baseline requirement and it is important that it is able to achieve this. However the performance does not significantly improve on the next best link, which is is able to achieve the minimum required latency 72\% of the time, while the WAN Connector does so 77.5\% of the time. This pales in comparison to the Oracle approach which shows that in theory one could have maintained the minimum latency required by the flow in 95\% of the cases. This means the WAN Connector's performance is only 80\% optimal.
+
 
 \subsection{Latency Performance Under Load and the Importance of Traffic Shaping}
 
@@ -127,24 +139,50 @@ For the final analysis, the jitter must be investigated. For this purpose the si
 
 As can be seen from the figure, the WAN Connector displays a very disappointing performance. It actually displays an inferior performance to two of the links. The switching is actually causing a worse performance. This is most likely down to insufficient statistics causing poor path selection, because jitter statistics can't be gathered about other paths in this single flow scenario. The probe packets which are periodically sent out do not provide enough data points to accurately determine jitter. While they can give a sufficient baseline for latency calculations, as well as helping to determine if a link is dead or alive, their jitter measurements are not likely to provide a strong insight into the true nature of the link's jitter.
 
-A final note about the figure. In the figure the 1st link actually performs better than the Oracel for most jitter values, before ultimately proving to have the greater maximum jitter values. This occurs because the Oracle is based on the simulation data and not the measurements. Therefore it is likely that the link experienced, for the most part, very low jitter, and thus because there are more data points available than for the Oracle, the percentage of packets below a certain level of jitter is greater, however the maximum values, during those times when the link experiences it's worst jitter are worse.
+A final note about the plot in figure \ref{fig:jitter_cdf}. In the figure the 1st link actually performs better than the Oracle for most jitter values, before ultimately proving to have the greater maximum jitter values. This occurs because the Oracle is based on the simulation data and not the measurements. Therefore it is likely that the better performing link experienced, for the most part, very low jitter, and thus because there are more data points available than for the Oracle (and because no doubt there was some small amount of luck with the random values used in the emulation), the percentage of packets below a certain level of jitter is greater. However ultimately the maximum values experienced by the flow, during those times when the link experiences it's worst jitter, are worse than the Oracle approach's worst cases, as one would expect.
 
 
 
+\section{Discussion}
+
+In light of these results one can conclude that the approach presented in the previous chapter is not without its flaws, however the results have also highlighted some of the functional aspects that were important for good performance. The latency based path switching was able to outperform the other available links and achieve 80\% optimality, and the inclusion of a traffic shaper proved vital for preventing the latency critical flow from experiencing higher buffering times due to a competing flow. For reliability, the WAN Connector showed that it was able to guarantee a critical flow a lower level of packet loss than would have been possible using any single link. Furthermore, it was even able to outperform the single link Oracle, and in a situation where the single link Oracle is unable to provide the required minimum level of packet loss for the desired flow, the WAN Connector was able to deliver the desired reliability. This is a hugely important result because it shows that the WAN Connector can provide a greater reliability than even a single link path selection algorithm, via the packet replication. This can enable critical applications to be run in environments where the backhaul options would usually be too unreliable to enable the critical applications.
+
+This section, however, also demonstrates the downside of the packet replication approach, as it greatly reduces the overall throughput. Beyond this, during the jitter experiments, it is seen that the WAN Connector provides a poorer performance than simply using a single link for the entire experiment. This is fundamentally a bad result. The baseline by which any path selection algorithm should be judged is its ability to outperform the individual paths, by always selecting the superior option. Since the WAN Connector fails in this instance it must be concluded that it cannot provide an overall reduction in jitter for any jitter sensitive applications. The author would suggest, however, that the problem in this respect is not due to the design but rather the implementation. Ultimately there was not enough up to date information about the available links' jitter, so that the path selection algorithm could find the right one.
 
 
+%%=========================================
+\section{Improvements}
+
+There are several possible improvements that immediately spring to mind. These could be applied both to the actual implementation as well as to the high level design.
+
+\subsubsection{Measuring and Predicting Path Characteristics}
+Firstly, the path estimation could be adjusted to not just report previous statistics but also attempt to infer what the path might look like in the near future, for example as a path begins to experience increased latency a predictive algorithm/approach might be able to preemptively move flows off of that path, before their latency requirements are violated. This approach could be based on machine learning or AI, or it could use analytical methods.
+
+Furthermore, it would be prudent to use an exponentially weighted averaging function when calculating a path's current characteristics, based on previous measurements. This would strike a nice balance between re-actively adjusting the predictions based on previous measurements and keeping in mind a path's performance across its entire history.
+
+Also, as the authors in \cite{adaptive} did, this thesis' approach could benefit from adaptive windows of reporting. This way there is not additional overhead with overly frequent statistical updates, as well as avoiding the reverse situation, where the reporting is too infrequent for a rapidly changing path.
+
+Lastly, the probe packets which are sent out periodically to measure each path could be adjust to periodically be sent in large bursts, this would serve to provide more accurate idea of the jitter and the packet loss, since these cannot be measured purely by sending a small number of probe packets. For accurate jitter and reliability measurements more packets are required. This may incur larger overhead on the link due to the bursts of extra packets, however one idea to counteract this would be to adjust the probing so that it is only performed on those links with insufficient traffic currently running through them. The links which are currently backhauling large amounts of traffic will be able to make their own measurements based on purely on the backhaul traffic, and there may be no need at all for probe packets. Conversely, the underutilized links will not be able to make good estimations, and sending bursts of probe packets will not interfere with the actual traffic. This presents a very clean solution to one of the biggest issues with the approach presented in this thesis.
+
+\subsubsection{Adjustments for Jitter}
+
+Another potential improvement would be to pass a "Time of Execution" field in the GTP header of packets of jitter-sensitive applications. This allows the receiving WAN connector to store packets if they have arrived too early, and, conversely, the packet ordering function may use this field to determine that it is more important to forward the current packet now, than to wait for a missing packet. This store and forward approach, with the time of execution field, is one of the solutions mentioned in the Deterministic Networking specification and would be a very sensible addition to this solution.
+
+Additionally, specifically for the Lower Earth Orbit (LEO) satellite case, the path selection could potentially be adjusted to account for the periodic increases in latency as the current satellite leaves the range of the ground station, and the next one comes into range. For example during this phase it might make sense to temporarily forward packets on a different path, or to enable the store and forward mechanism, before disabling it once the satellite handover has passed.
+
+\subsubsection{Forward Error Encoding}
+
+One possible improvement is the addition of Forward Error Encoding (FEC). While this would be difficult to integrate into the equation to select paths, FEC could be used to increase the resilience of consistently lossy links, which is a big benefit for links which commonly exhibit this characteristic, such as wireless links. Especially LEO satellite links tend to present around 1\% packet loss \cite{LEO_MEASURE}, which makes the use of FEC much more reasonable since one would only need to add a 2 to 5\% overhead, using a fountain code scheme, and thus wind up with a much more reliable link. However as was observed in the evaluation of the WAN Connector's throughput when using the Packet Ordering and Elimination Function, additional computation when receiving packets can lead to reduced overhead. To this extent, the addition of FEC would require efficient decoders and encoders on the sending and receiving side, so that the packet processing speed is not slowed down.
+
+\subsubsection{Traffic Prioritization}
+
+Perhaps the greatest theoretical flaw in the presented approach is that the WAN Connector does not perform packet prioritization, even though the 5G specifications explicitly mention that flows may have different priorities and should be prioritized accordingly. This is a significant flaw, and very difficult to account for. The most reasonable approach to integrating this is to add it to the traffic shaper. In the experiments performed here, the CAKE traffic shaper was used. It's implementation in the linux kernel does allow for up to 8 different priority 
+"tins" for traffic, however that is not enough for the 5G requirements which allow for a great deal more priority levels than just 8. One option, therefore, would be to extend the CAKE implementation to allow a greater number of priority tins. Alternatively, the a different traffic shaper could be chosen, or developed, which incorporates prioritization as well as fairness and active queue management at the level of individual IP flows.
 
 
+\subsubsection{Load Balancing}
 
-
-
-
-
-
-
-
-
-
+In instances where more than one path are viable, the algorithm used for path selection does not account for load on the paths, nor for load balancing. This is because the algorithm attempts to find the minimum weight path. Even in cases where two paths have the same properties and the same weighting, the algorithm does not attempt to shuffle or rotate between them. All flows with similar requirements will wind up on the same path. This can lead to under utilization of other paths and congestion problems on the "primary" path. This could be partially addressed by integrating a degree of random selection for equal paths. However a potentially more interesting approach would be to dynamically update the weights of different paths, based on their current load. This would keep randomness out of the algorithm, for reproducible results, and act as a form of load balancing. However great care would have to be taken with respect to how the weights are adjusted, so that paths are still appropriately weighted relative to each other. i.e. a path which is deemed twice as expensive as another path should not have more than half as much traffic as the other path, for flows which could go be forwarded on either path.
 
 
 

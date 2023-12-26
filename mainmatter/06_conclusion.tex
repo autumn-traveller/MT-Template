@@ -4,30 +4,22 @@
 \chapter{Conclusion and Outlook}
 \label{cha:conclusion}
 
-Looking back, this thesis has addresses the usage of multiple backhaul paths in a campus 5G setting to achieve determinism. A review of the topic and relevant literature was done in the background chapter, then an approach was developed based on that information and based on the requirements of the problem. Finally this approach was evaluated in a testbed with a link emulator to see how it performed.
-
-TODO
-
 %%=========================================
-\section{Improvements}
-\label{sec:improvements}
+\section{Summary}
 
-There are several possible improvements that immediately spring to mind. Firstly, the path estimation could be adjusted to not just report previous statistics but also attempt to infer what the path might look like in the near future, for example as a path begins to experience increased latency a predictive algorithm/approach might be able to pre-emptively move flows off of that path, before their latency requirements are violated. This approach could be based on machine learning or AI, or it could use analytical methods.
+In review, this thesis has addresses the usage of multiple backhaul paths in a campus 5G setting to achieve determinism. A review of the topic and relevant literature was done in the background chapter, then an approach was developed based on that information and based on the requirements of the problem. Finally this approach was evaluated in a testbed with a link emulator to see how it performed. The implementation provided was able to achieve some of the goals set for latency and packet loss, but struggled with jitter reduction, as well as utilizing all of the available bandwidth when it was attempting to improve reliability. In discussion of these results, their potential sources and improvements were addressed.
 
-Additionally, specifically for the Lower Earth Orbit (LEO) satellite case, the path selection could potentially be adjusted to account for the periodic increases in latency as the current satellite leaves the range of the ground station, and the next one comes into range. For example during this phase it might make sense to temporarily forward packets on a different path.
+Placed in a wider context, this thesis presents a foray into an area which will become more and more relevant as 5G campus deployments increase and mature, and as 5G applications which require greater degrees of determinism become more commonplace. On the whole, greater degrees of bespoke packet processing are required for traffic on the internet, as applicaiton's evolve and their requirements become more strict. Especially in geographically distributed settings with multiple backhaul paths, the ability to intelligently select amongst these paths will be crucial.
 
-Another potential improvement would be to pass a "Time of Execution" field in the GTP header of packets of jitter-sensitive applications. This allows the receiving WAN connector to hold packets if they have arrived too early, and, conversely, the packet ordering function may use this field to determine that it is more important to forward the current packet now, than to wait for a missing packet.
-
-As the authors in \cite{adaptive} did, this thesis' approach could benefit from adaptive windows of reporting. This way there is not additional overhead with overly frequent statistical updates, as well as avoiding the reverse situation, where the reporting is too infrequent for a rapidly changing path.
-
-The last possible improvement is the addition of Forward Error Encoding (FEC). While this would be difficult to integrate into the equation to select paths, FEC could be used to increase the resilience of consistently lossy links, which is a big benefit for links which commonly exhibit this characteristic, such as wireless links.
 
 %%=========================================
 \section{Implications and Further Areas of Research}
 \label{sec:implications}
 
-Since the results were only verified in a testbed setup it would make sense to now test the WAN Connector in a real campus 5G deployment where there actually are multiple outgoing paths.
+The results obtained here imply the presented approach is worthy of further investigation, however only in conjunction with some of the presented improvements. The implementation provided by this thesis cannot achieve determinism without certain adjustments, but nor can it be concluded that is will be definitively unable to do so.
 
-Research should also be conducted on evaluating the performance of specific applications performance. For example the quality of VoIP calls do not only depend on latency and jitter \cite{voip-measurement}, but rather how they interact together, and they have their own suites of evaluation criteria. Another specific application to consider has to be interactive video. Mission critical as well as control systems could also be pulled into the test suites for evaluation.
+Since the results were only verified in a testbed setup it would make sense to now test the WAN Connector in a real campus 5G deployment where there actually are multiple outgoing paths. Furthermore many of the improvements suggested in the previous section would all be worthy of implementing and evaluating in similar experiments.
+
+Research should also be conducted on evaluating the performance of specific applications performance. For example, the quality of VoIP calls does'nt depend just on latency and jitter \cite{voip-measurement}, but rather how they interact together, and they have their own suites of evaluation criteria. Another specific application to consider has to be interactive video. Mission critical as well as control systems could also be considered in the test suites for evaluation.
 
 This approach has been a deterministic one, that is the function used to select paths on which to forward is deterministic. It would be interesting to see what benefit AI and machine learning approaches may bring to this problem since they can act more dynamically, and perhaps learn the characteristics of a given link over time. Perhaps they can discover what the link exhibits right before total failure and thus perform pre-emptive path switching.
