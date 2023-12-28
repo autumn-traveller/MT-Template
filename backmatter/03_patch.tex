@@ -1,0 +1,71 @@
+%!TEX root = ../thesis.tex
+
+
+\cleardoublepage
+\chapter{Patch for the BPF Flow Dissector to Peek Inside GTP}
+\label{appendix:patch}
+
+As was mentioned in the "Approach" chapter, in a true 5G Campus deployment the messages between either the RAN nodes or the UPF and the WAN Connector will be carrying GTP packets. In order for the tc-cake traffic shaper in the linux kernel to be able to detect the packets being tunneled, a custom BPF flow dissector must be used \footnote{https://www.kernel.org/doc/html/v5.1/networking/bpf\_flow\_dissector.html\#overview}.
+
+The linux kernel provides a very simple example of a set of dissectors which remove the tunnel headers for various protocols. Unfortunately the GTP protocol is not included in this set, but it is a very simple patch to add the required functionality to the kernel.
+
+The listing \ref{lst:patch} shows a patch for the example file given in the linux kernel \footnote{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/testing/selftests/bpf/progs/bpf\_flow.c?h=3006adf3be79cde4d14b1800b963b82b6e5572e0}. This patch constitutes an important part of this thesis' contribution because without it, a realistic deployment of the proposed system would not be possible, because the traffic shaper would not function.
+
+\clearpage
+
+\begin{lstlisting}[language=diff, caption = {Patch to remove GTP Headers for the BPF Flow Dissector Example in the Linux Kernel}, label = {lst:patch} ]
+
+diff --git a/bpf_flow.c b/bpf_flow.c
+index ed437e1..70a08a8 100644
+--- a/bpf_flow.c
++++ b/bpf_flow.c
+@@ -161,6 +161,8 @@ int _dissect(struct __sk_buff *skb)
+ 	return parse_eth_proto(skb, keys->n_proto);
+ }
+ 
++#define GTP_ENCAP_OFFSET 24
++
+ /* Parses on IPPROTO_* */
+ static __always_inline int parse_ip_proto(struct __sk_buff *skb, __u8 proto)
+ {
+@@ -171,6 +173,10 @@ static __always_inline int parse_ip_proto(struct __sk_buff *skb, __u8 proto)
+ 	struct ethhdr *eth, _eth;
+ 	struct tcphdr *tcp, _tcp;
+ 	struct udphdr *udp, _udp;
++	struct udphdr *encap_udp, _encap_udp;
++	struct iphdr *iph, _iph;
++	__u16 srcport;
++	__u16 destport;
+ 
+ 	switch (proto) {
+ 	case IPPROTO_ICMP:
+@@ -242,7 +248,26 @@ static __always_inline int parse_ip_proto(struct __sk_buff *skb, __u8 proto)
+ 		udp = bpf_flow_dissect_get_header(skb, sizeof(*udp), &_udp);
+ 		if (!udp)
+ 			return export_flow_keys(keys, BPF_DROP);
++		srcport = bpf_ntohs(udp->source);
++		destport = bpf_ntohs(udp->dest);
++		if (srcport == 2152 && destport == 2152) {
++			keys->thoff += sizeof(*udp) + GTP_ENCAP_OFFSET;
++			iph = bpf_flow_dissect_get_header(skb, sizeof (*iph), &_iph);
++			if (iph) {
++				keys->thoff += (iph->ihl << 2);
++				encap_udp = bpf_flow_dissect_get_header(skb, sizeof(*encap_udp), &_encap_udp);
++				if (encap_udp) {
++					keys->thoff -= (iph->ihl << 2);
++					keys->is_encap = true;
++					return parse_eth_proto(skb, bpf_htons(ETH_P_IP));
++				} else {
++					bpf_printk("Couldnt dissect encapsulated udp header");
++				}
++			} else {
++					bpf_printk("Couldnt dissect encapsulated ip header at GTP offset (%d bytes)", keys->thoff);
++			}
+ 
++		}
+ 		keys->sport = udp->source;
+ 		keys->dport = udp->dest;
+ 		return export_flow_keys(keys, BPF_OK);
+
+
+\end{lstlisting}

@@ -2,13 +2,224 @@
 
 
 \cleardoublepage
-\chapter{JSON Example}
+\chapter{JSON Formats Used in Control and Data-Plane Messages}
 \label{appendix:format}
 
-This appendix contains excerpts of the json messages passed between the control plane and the data plane during operation. Listing \ref{lst:stats}shows the format of the messages used for reporting statistics. Listing \ref{lst:flows}shows how the control plane sends updates to the data plane nodes.
+This appendix contains excerpts of the JSON messages passed between the control plane and the data plane during operation. Listing \ref{lst:flow} shows how the control plane sends updates to the data plane nodes. Listing \ref{lst:stats} shows the format of the messages used for reporting statistics.
 
-\lstinputlisting[style=json, caption={Statistics from Data Plane}, label={lst:flow}]{listings/stats.js}
+These are the only two message formats used between the Control Plane and the Data Plane. These messages are sent over SCTP, UTF-8 encoded. They are the only data in the SCTP messages' body. By using JSON there are three distinct advantages- firstly, no specific protocol must be developed for the messaging between control and data plane, secondly the messages are both human and machine readable which makes for easier debugging, and lastly because it is a hugely popular data format there are lots supporting libraries. 
 
-\lstinputlisting[style=json, caption={New Flow from Control Plane}, label={lst:flow}]{listings/flows.js}
+The messages which add new flows to the Data Plane contain the flow Description as well as its priority, and the Packet Ordering Function (POF) maximum delay, which was mentioned in the description of the POF algorithm in the approach.
+
+In the reverse direction, when the Data Plane nodes report to the Control Plane, the statistics reported include firstly the paths description (source and destination IP address) as well as the number of packets and bytes received on that path, and the average jitter and latency experienced, both over the entire reporting period, and since the last message. Finally, the message are also sent with a list of the "sending" statistics. That is, the number of bytes and packets sent out on the WAN Connector's interfaces. Both the path and interface statistics are sent with three timestamps. One timestamp to describe the first packet sent or received during this reporting window, one to describe the last packet sent or received during that same reporting window, and a timestamp taken before the message itself was sent.
+
+By including the "sending" statistics, the WAN Connector is able to inform it's own Control Plane if an interface is being actively used. On the receiving side, if an interface has not received packets from the respective source in too long a time, then the Control Plane can infer complete link failure. This is crucial for the ability of the WAN Connector to switch all user traffic off of dead links. Once a link works again, the WAN Connector can detect this because the periodic probe packets will be received.
+
+\clearpage
+
+\begin{lstlisting}[style=json, caption={Format of Flow Forwarding Decisions from Control Plane}, label={lst:flow}]
+
+{
+  "flowsToAdd": [
+    {
+      "flowID": 1,
+      "priority": 1,
+      "flowDescription": {
+        "src": "10.0.0.31",
+        "srcSubnet": 24,
+        "srcPortStart": 0,
+        "srcPortEnd": 0,
+        "dst": "10.0.3.31",
+        "dstSubnet": 24,
+        "dstPortStart": 0,
+        "dstPortEnd": 0,
+        "protocol": 1,
+        "direction": "in"
+      },
+      "POFmaxDelayMicros": 0,
+      "nForwarding": 1,
+      "decisions": [
+        {
+          "interfaceName": "link3",
+          "remoteEndpoint": {
+            "ip": "10.1.22.21",
+            "port": 2152
+          }
+        }
+      ]
+    },
+    {
+      "flowID": 2,
+      "priority": 1,
+      "flowDescription": {
+        "src": "10.0.0.31",
+        "srcSubnet": 24,
+        "srcPortStart": 0,
+        "srcPortEnd": 0,
+        "dst": "10.0.3.31",
+        "dstSubnet": 24,
+        "dstPortStart": 0,
+        "dstPortEnd": 0,
+        "protocol": 17,
+        "direction": "in"
+      },
+      "POFmaxDelayMicros": 0,
+      "nForwarding": 1,
+      "decisions": [
+        {
+          "interfaceName": "link3",
+          "remoteEndpoint": {
+            "ip": "10.1.22.21",
+            "port": 2152
+          }
+        }
+      ]
+    },
+    {
+      "flowID": 3,
+      "priority": 1,
+      "flowDescription": {
+        "src": "10.0.0.31",
+        "srcSubnet": 24,
+        "srcPortStart": 0,
+        "srcPortEnd": 0,
+        "dst": "10.0.3.31",
+        "dstSubnet": 24,
+        "dstPortStart": 0,
+        "dstPortEnd": 0,
+        "protocol": 6,
+        "direction": "in"
+      },
+      "POFmaxDelayMicros": 0,
+      "nForwarding": 1,
+      "decisions": [
+        {
+          "interfaceName": "link3",
+          "remoteEndpoint": {
+            "ip": "10.1.22.21",
+            "port": 2152
+          }
+        }
+      ]
+    }
+  ]
+}
 
 
+\end{lstlisting}
+
+\clearpage
+
+\begin{lstlisting}[style=json, caption = {Format of Statistics from Data Plane}, label = {lst:stats}]
+
+{
+ "pathStats": [{
+   "src": "10.1.33.31",
+   "dst": "10.0.33.32",
+   "nbytes": 6272,
+   "npackets": 224,
+   "ndropped": 0,
+   "avgLatencyMicros": 30655,
+   "avgJitterMicros": 1835,
+   "bytesSince": 56,
+   "packetsSince": 2,
+   "droppedSince": 0,
+   "latencySinceMicros": 29276,
+   "jitterSinceMicros": 1431,
+   "earliestRecvdMillis": 1703448057713,
+   "lastRecvdMillis": 1703448057716,
+   "heartbeatTimestampMillis": 1703448058929
+  }, {
+   "src": "10.1.44.41",
+   "dst": "10.0.44.42",
+   "nbytes": 6272,
+   "npackets": 224,
+   "ndropped": 0,
+   "avgLatencyMicros": 28648,
+   "avgJitterMicros": 4182,
+   "bytesSince": 56,
+   "packetsSince": 2,
+   "droppedSince": 0,
+   "latencySinceMicros": 29540,
+   "jitterSinceMicros": 5351,
+   "earliestRecvdMillis": 1703448057711,
+   "lastRecvdMillis": 1703448057718,
+   "heartbeatTimestampMillis": 1703448058929
+  }, {
+   "src": "10.1.99.91",
+   "dst": "10.0.99.92",
+   "nbytes": 6912,
+   "npackets": 239,
+   "ndropped": 6,
+   "avgLatencyMicros": 23577,
+   "avgJitterMicros": 2592,
+   "bytesSince": 56,
+   "packetsSince": 2,
+   "droppedSince": 0,
+   "latencySinceMicros": 20983,
+   "jitterSinceMicros": 3116,
+   "earliestRecvdMillis": 1703448057704,
+   "lastRecvdMillis": 1703448057708,
+   "heartbeatTimestampMillis": 1703448058929
+  }, {
+   "src": "10.1.22.21",
+   "dst": "10.0.22.22",
+   "nbytes": 6272,
+   "npackets": 224,
+   "ndropped": 0,
+   "avgLatencyMicros": 23387,
+   "avgJitterMicros": 8052,
+   "bytesSince": 56,
+   "packetsSince": 2,
+   "droppedSince": 0,
+   "latencySinceMicros": 16977,
+   "jitterSinceMicros": 9769,
+   "earliestRecvdMillis": 1703448057701,
+   "lastRecvdMillis": 1703448057704,
+   "heartbeatTimestampMillis": 1703448058929
+  }],
+ "interfaceStats": [{
+   "name": "link1",
+   "src": "10.0.99.92",
+   "nbytes": 170863822,
+   "npackets": 114442,
+   "bytesSince": 5812016,
+   "packetsSince": 3887,
+   "earliestSentMillis": 1703448055928,
+   "lastSentMillis": 1703448058928,
+   "heartbeatTimestampMillis": 1703448058929
+  }, {
+   "name": "link2",
+   "src": "10.0.33.32",
+   "nbytes": 162768024,
+   "npackets": 109020,
+   "bytesSince": 56,
+   "packetsSince": 2,
+   "earliestSentMillis": 1703448055928,
+   "lastSentMillis": 1703448055928,
+   "heartbeatTimestampMillis": 1703448058929
+  }, {
+   "name": "link3",
+   "src": "10.0.22.22",
+   "nbytes": 87215536,
+   "npackets": 58517,
+   "bytesSince": 56,
+   "packetsSince": 2,
+   "earliestSentMillis": 1703448055928,
+   "lastSentMillis": 1703448055928,
+   "heartbeatTimestampMillis": 1703448058929
+  }, {
+   "name": "link4",
+   "src": "10.0.44.42",
+   "nbytes": 174418872,
+   "npackets": 116808,
+   "bytesSince": 56,
+   "packetsSince": 2,
+   "earliestSentMillis": 1703448055928,
+   "lastSentMillis": 1703448055928,
+   "heartbeatTimestampMillis": 1703448058929
+  }]
+}
+
+
+\end{lstlisting}

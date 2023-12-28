@@ -36,8 +36,20 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 %\usepackage{tabu, longtable}
 \usepackage{booktabs}
 
+\usepackage[svgnames]{xcolor}
+  \definecolor{diffstart}{named}{Grey}
+  \definecolor{diffincl}{named}{Green}
+  \definecolor{diffrem}{named}{Red}
+%  \definecolor{diffrem}{named}{OrangeRed}
+
 % Needed for code listings
 \usepackage{listings}
+\lstdefinelanguage{diff}{
+    basicstyle=\ttfamily\small,
+    morecomment=[f][\color{diffstart}]{@@},
+    morecomment=[f][\color{diffincl}]{+},
+    morecomment=[f][\color{diffrem}]{-},
+}
 \usepackage{color}
 
 % Subfigure
@@ -171,10 +183,10 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 %\addcontentsline{toc}{section}{\listtablename}
 %\listoftables
 %
-%\clearpage
-%\phantomsection
-%\addcontentsline{toc}{section}{\lstlistlistingname}
-%\lstlistoflistings
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{\lstlistlistingname}
+\lstlistoflistings
 
 %%=========================================
 % Mainmatter
@@ -194,7 +206,8 @@ linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 %Backmatter
 
 \appendix
-%\include{backmatter/01_formats}
+\include{backmatter/03_patch}
+\include{backmatter/01_formats}
 \include{backmatter/02_example_gtp}
 % Include more appendices as required.
 
