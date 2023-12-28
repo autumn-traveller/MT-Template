@@ -6,11 +6,23 @@
 \addcontentsline{toc}{section}{Abstract}
 \section*{Abstract}
 
-TODO
+The dawn of 5G brings with it an increased focus on bespoke quality of service provisions for different applications. Specifically for remote or emergency deployments, backhaul which respects the quality of service requirements of the applications running on-site (deterministic backhaul) is a difficult task. The new space race, in Lower Earth Orbit (LEO), has created a new possibility for backhaul over LEO satellite constellations and this transforms the backhaul challenge for industrial 5G sites, often located outside of cities and without access to fiber optic, into a multipath question.
+
+% it may become possible to use intelligent path and interface selection to achieve determinism for the traffic being backhauled. To that extent
+This thesis prevents an investigation into, and proposal for, the use of multiple backhaul paths, in a geographically distributed 5G Campus deployment, to provide determinism. In the course of this document a design and an implementation is presented, which take a 5G flow's requirements and uses knowledge collected about the available backhaul paths to calculate, via a binary optimization equation, which path or paths to send it on. The proposed solution comprises both a control plane and a data plane component, as well as a traffic shaper, and a deployment configuration designed specifically for use in geographically distributed Campus 5G Networks is presented.
+
+The described solution is investigated with respect to its ability to deterministically provide various network characteristics to traffic flows which require them, using a custom testbed which can emulate multiple links, . The results do not present conclusive evidence for the solution's ability to provide determinism, but do show promise. Although it is only able to achieve 80\% optimality for latency based path switching, this thesis' solution is able to improve the latency experienced. It fails to reduce jitter for jitter-sensitive flows, and needs to compromise throughput in order to provide reduced packet loss, however it is able provide lower packet loss than even the Optimal Single Path Oracle, via its use of path switching and packet replication.
+
 
 %%=========================================
 \cleardoublepage
 \addcontentsline{toc}{section}{Zusammenfassung}
 \section*{Zusammenfassung}
 
-TODO
+
+5G legt einen größeren Fokus auf die verschiedene Servicequalität die von besonderen Applikationen gebraucht werden wird. Ins besonders abgelegene oder aus Notfall errichtete 5G Netze stehen vor einen schweren Problem, Backhaul bereit zu stellen der die benötigte Netzwerkeigenschaften ihrer kritischen Applikationen respektiert (deterministischer Backhaul). Dank der wachsenden Verfügbarkeit von Verbindungen über LEO Satellitenkonstellationen wird das traditionelle Problem vom Backhaul jetzt eine Multipath Frage.
+
+Diese Arbeit beschreibt und implementiert eine Lösung die, in 5G Campus Umgebungen, verschiedene ausgehende Pfade benutzen kann um 5G Flows einen deterministischen Backhaul bereit zu stellen. Hierzu wird eine Architektur entworfen, welche eine binäre Optimierungsgleichung löst um diese Entscheidung zu treffen, anhand von Daten die über die ausgehenden Pfaden gesammelt werden. Des weiteren verfügt die Lösung über geteilte Steuerungs und Daten-ebenen und einen Traffic Shaper, und es wird eine Konfiguration spezifisch für 5G Campus Netze vorgestellt.
+
+Die vorgestellte Lösung, der "WAN Connector", wird dann in einem Testbed der entworfen worden ist um Multipath Szenarien zu Emulieren auf ihrer deterministischen Eigenschaften untersucht. Die Ergebnisse weisen leider nach dass die Lösung nicht kompletten Determinismus anbieten kann. Obwohl es in der Frage der Latenz nur 80\% Optimal agieren kann, schafft es, die Implementation dieser Arbeit, die Latenz insgesamt zu verringern. Den Jitter zu reduzieren gelingt nicht, und auch der Durchsatz von Flows die der WAN Connector für Paketverlust und Zuverlässigkeit optimiert wird extrem reduziert, dennoch ist es aber möglich die Paketverluste mehr zu verringern als sogar der Einzel-Pfad Orakel, durch die Nutzung von Pfad-wechsel und Replikation.
+
