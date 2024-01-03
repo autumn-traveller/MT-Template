@@ -260,20 +260,6 @@
   publisher={IEEE}
 }
 
-@techreport{finn2019deterministic,
-  title={Deterministic networking problem statement},
-  author={Finn, Norman and Thubert, Pascal},
-  year={2019}
-}
-
-@incollection{finn2019deterministicArch,
-  title={Deterministic networking architecture},
-  author={Finn, Norman and Thubert, Pascal and Varga, Balazs and Farkas, J{\'a}nos},
-  booktitle={RFC 8655},
-  year={2019},
-  publisher={IETF}
-}
-
 @article{jaber20165g,
   title={5G backhaul challenges and emerging research directions: A survey},
   author={Jaber, Mona and Imran, Muhammad Ali and Tafazolli, Rahim and Tukmanov, Anvar},
@@ -487,6 +473,21 @@
   author={Luby, Michael and Shokrollahi, Amin and Watson, Mark and Stockhammer, Thomas},
   year={2007}
 }
+
+@inproceedings{krentel1986complexity,
+  title={The complexity of optimization problems},
+  author={Krentel, Mark W},
+  booktitle={Proceedings of the eighteenth annual ACM symposium on Theory of computing},
+  pages={69--76},
+  year={1986}
+}
+
+@phdthesis{tongaonkar2004fast,
+  title={Fast pattern-matching techniques for packet filtering},
+  author={Tongaonkar, Alok S},
+  year={2004},
+  school={Citeseer}
+}
 @article{appleby2012murmurhash3,
   title={MurmurHash3, 2012},
   author={Appleby, Austin},
@@ -525,6 +526,31 @@
  type = {Technical Specification (TS)},
  year = {2022}
 }
+@techreport{3gpp.23.737,
+ author = {3GPP},
+ institution = {{3rd Generation Partnership Project (3GPP)}},
+ month = {03},
+ note = {Version 17.2.0},
+ number = {23.737},
+ title = {{Study on architecture aspects for using satellite access in 5G}},
+ type = {Technical Report (TR)},
+ year = {2021}
+}
+@misc{detnet-arch,
+    series =    {Request for Comments},
+    number =    8655,
+    howpublished =  {RFC 8655},
+    publisher = {RFC Editor},
+    doi =       {10.17487/RFC8655},
+    url =       {https://www.rfc-editor.org/info/rfc8655},
+    author =    {Norman Finn and Pascal Thubert and Balazs Varga and János Farkas},
+    title =     {{Deterministic Networking Architecture}},
+    pagetotal = 38,
+    year =      2019,
+    month =     oct,
+    abstract =  {This document provides the overall architecture for Deterministic Networking (DetNet), which provides a capability to carry specified unicast or multicast data flows for real-time applications with extremely low data loss rates and bounded latency within a network domain. Techniques used include 1) reserving data-plane resources for individual (or aggregated) DetNet flows in some or all of the intermediate nodes along the path of the flow, 2) providing explicit routes for DetNet flows that do not immediately change with the network topology, and 3) distributing data from DetNet flow packets over time and/or space to ensure delivery of each packet's data in spite of the loss of a path. DetNet operates at the IP layer and delivers service over lower-layer technologies such as MPLS and Time- Sensitive Networking (TSN) as defined by IEEE 802.1.},
+}
+
 @techreport{ietf-detnet-pof-08,
     number =    {draft-ietf-detnet-pof-08},
     type =      {Internet-Draft},
@@ -539,4 +565,34 @@
     month =     dec,
     day =       21,
     abstract =  {Replication and Elimination functions of DetNet Architecture can result in out-of-order packets, which is not acceptable for some time-sensitive applications. The Packet Ordering Function (POF) algorithm described herein enables to restore the correct packet order when replication and elimination functions are used in DetNet networks.},
+}
+
+@misc{detnet-use-cases,
+    series =    {Request for Comments},
+    number =    8578,
+    howpublished =  {RFC 8578},
+    publisher = {RFC Editor},
+    doi =       {10.17487/RFC8578},
+    url =       {https://www.rfc-editor.org/info/rfc8578},
+    author =    {Ethan Grossman},
+    title =     {{Deterministic Networking Use Cases}},
+    pagetotal = 97,
+    year =      2019,
+    month =     may,
+    abstract =  {This document presents use cases for diverse industries that have in common a need for "deterministic flows". "Deterministic" in this context means that such flows provide guaranteed bandwidth, bounded latency, and other properties germane to the transport of time-sensitive data. These use cases differ notably in their network topologies and specific desired behavior, providing as a group broad industry context for Deterministic Networking (DetNet). For each use case, this document will identify the use case, identify representative solutions used today, and describe potential improvements that DetNet can enable.},
+}
+
+@misc{detnet-problem-statement,
+    series =    {Request for Comments},
+    number =    8557,
+    howpublished =  {RFC 8557},
+    publisher = {RFC Editor},
+    doi =       {10.17487/RFC8557},
+    url =       {https://www.rfc-editor.org/info/rfc8557},
+    author =    {Norman Finn and Pascal Thubert},
+    title =     {{Deterministic Networking Problem Statement}},
+    pagetotal = 11,
+    year =      2019,
+    month =     may,
+    abstract =  {This paper documents the needs in various industries to establish multi-hop paths for characterized flows with deterministic properties.},
 }

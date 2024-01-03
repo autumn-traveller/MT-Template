@@ -30,3 +30,13 @@
  type = {Technical Specification (TS)},
  year = {2022}
 }
+@techreport{3gpp.23.737,
+ author = {3GPP},
+ institution = {{3rd Generation Partnership Project (3GPP)}},
+ month = {03},
+ note = {Version 17.2.0},
+ number = {23.737},
+ title = {{Study on architecture aspects for using satellite access in 5G}},
+ type = {Technical Report (TR)},
+ year = {2021}
+}

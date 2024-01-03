@@ -15,6 +15,8 @@ In the reverse direction, when the Data Plane nodes report to the Control Plane,
 
 By including the "sending" statistics, the WAN Connector is able to inform it's own Control Plane if an interface is being actively used. On the receiving side, if an interface has not received packets from the respective source in too long a time, then the Control Plane can infer complete link failure. This is crucial for the ability of the WAN Connector to switch all user traffic off of dead links. Once a link works again, the WAN Connector can detect this because the periodic probe packets will be received.
 
+In order to save space this message has been edited  for display so that it only contains messages about two of the available paths instead of all the paths.
+
 \clearpage
 
 \begin{lstlisting}[style=json, caption={Format of Flow Forwarding Decisions from Control Plane}, label={lst:flow}]
@@ -145,64 +147,12 @@ By including the "sending" statistics, the WAN Connector is able to inform it's 
    "earliestRecvdMillis": 1703448057711,
    "lastRecvdMillis": 1703448057718,
    "heartbeatTimestampMillis": 1703448058929
-  }, {
-   "src": "10.1.99.91",
-   "dst": "10.0.99.92",
-   "nbytes": 6912,
-   "npackets": 239,
-   "ndropped": 6,
-   "avgLatencyMicros": 23577,
-   "avgJitterMicros": 2592,
-   "bytesSince": 56,
-   "packetsSince": 2,
-   "droppedSince": 0,
-   "latencySinceMicros": 20983,
-   "jitterSinceMicros": 3116,
-   "earliestRecvdMillis": 1703448057704,
-   "lastRecvdMillis": 1703448057708,
-   "heartbeatTimestampMillis": 1703448058929
-  }, {
-   "src": "10.1.22.21",
-   "dst": "10.0.22.22",
-   "nbytes": 6272,
-   "npackets": 224,
-   "ndropped": 0,
-   "avgLatencyMicros": 23387,
-   "avgJitterMicros": 8052,
-   "bytesSince": 56,
-   "packetsSince": 2,
-   "droppedSince": 0,
-   "latencySinceMicros": 16977,
-   "jitterSinceMicros": 9769,
-   "earliestRecvdMillis": 1703448057701,
-   "lastRecvdMillis": 1703448057704,
-   "heartbeatTimestampMillis": 1703448058929
   }],
  "interfaceStats": [{
-   "name": "link1",
-   "src": "10.0.99.92",
-   "nbytes": 170863822,
-   "npackets": 114442,
-   "bytesSince": 5812016,
-   "packetsSince": 3887,
-   "earliestSentMillis": 1703448055928,
-   "lastSentMillis": 1703448058928,
-   "heartbeatTimestampMillis": 1703448058929
-  }, {
    "name": "link2",
    "src": "10.0.33.32",
    "nbytes": 162768024,
    "npackets": 109020,
-   "bytesSince": 56,
-   "packetsSince": 2,
-   "earliestSentMillis": 1703448055928,
-   "lastSentMillis": 1703448055928,
-   "heartbeatTimestampMillis": 1703448058929
-  }, {
-   "name": "link3",
-   "src": "10.0.22.22",
-   "nbytes": 87215536,
-   "npackets": 58517,
    "bytesSince": 56,
    "packetsSince": 2,
    "earliestSentMillis": 1703448055928,
