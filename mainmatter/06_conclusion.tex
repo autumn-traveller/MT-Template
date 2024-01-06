@@ -13,8 +13,48 @@ Placed in a wider context, this thesis presents a foray into an area which will 
 
 
 %%=========================================
-\section{Implications and Further Areas of Research}
-\label{sec:implications}
+\section{Outlook}
+
+%%=========================================
+\subsection{Improvements}
+
+There are several possible improvements that immediately spring to mind. These could be applied both to the actual implementation as well as to the high level design.
+
+\subsubsection{Measuring and Predicting Path Characteristics}
+Firstly, the path estimation could be adjusted to not just report previous statistics but also attempt to infer what the path might look like in the near future, for example as a path begins to experience increased latency a predictive algorithm/approach might be able to preemptively move flows off of that path, before their latency requirements are violated. This approach could be based on machine learning or AI, or it could use analytical methods.
+
+Furthermore, it would be prudent to use an exponentially weighted averaging function when calculating a path's current characteristics, ba
+
+sed on previous measurements. This would strike a nice balance between re-actively adjusting the predictions based on previous measurements and keeping in mind a path's performance across its entire history.
+
+Also, as the authors in \cite{habib2007improving} did, this thesis' approach could benefit from adaptive windows of reporting. Instead of collecting statistics at a constant periodic rate, the rate can be adjusted to that period which performs best. This way there is not additional overhead with overly frequent statistical updates, as well as avoiding the reverse situation, where the reporting is too infrequent for a rapidly changing path.
+
+Lastly, the probe packets which are sent out periodically to measure each path could be adjust to periodically be sent in large bursts, this would serve to provide a more accurate idea of the jitter and the packet loss, since these cannot be measured purely by sending a small number of probe packets. For accurate jitter and reliability measurements more packets are required. This may incur larger overhead on the link due to the bursts of extra packets, however one idea to counteract this would be to adjust the probing so that it is only performed on those links with insufficient traffic currently running through them. The links which are currently backhauling large amounts of traffic will be able to make their own measurements based purely on the backhaul traffic, and there may be no need at all for probe packets. Conversely, the underutilized links will not be able to make good estimations, and sending bursts of probe packets will not interfere with the actual traffic. This would present a solution to one of the biggest issues with the approach presented in this thesis.
+
+\subsubsection{Adjustments for Jitter}
+
+Another potential improvement would be to pass a "Time of Execution" field in the GTP header of packets of jitter-sensitive applications. This allows the receiving WAN connector to store packets if they have arrived too early, and, conversely, the packet ordering function may use this field to determine that it is more important to forward the current packet now, than to wait for a missing packet. This store and forward approach, with the time of execution field, is one of the solutions mentioned in the Deterministic Networking specification and would be a very sensible addition to this solution.
+
+Additionally, specifically for the Lower Earth Orbit (LEO) satellite case, the path selection could potentially be adjusted to account for the periodic increases in latency as the current satellite leaves the range of the ground station, and the next one comes into range. For example during this phase it might make sense to temporarily forward packets on a different path, or to enable the store and forward mechanism, before disabling it once the satellite handover has passed.
+
+\subsubsection{Forward Error Correction}
+
+One possible improvement is the addition of Forward Error Correction (FEC). While this would be difficult to integrate into the equation to select paths, FEC could be used to increase the resilience of consistently lossy links, which is a big benefit for links which commonly exhibit this characteristic, such as wireless links. Especially LEO satellite links tend to present around 1\% packet loss \cite{deutschmann2022broadband}, which makes the use of FEC much more reasonable since one would only need to add a 2 to 5\% overhead, using a fountain code scheme, and thus wind up with a much more reliable link. However as was observed in the evaluation of the WAN Connector's throughput when using the Packet Ordering and Elimination Function, additional computation when receiving packets can lead to reduced overhead. To this extent, the addition of FEC would require efficient decoders and encoders on the sending and receiving side, so that the packet processing speed is not slowed down.
+
+\subsubsection{Traffic Prioritization and Rate Enforcement}
+
+Perhaps the greatest theoretical flaw in the presented approach is that the WAN Connector does not perform packet prioritization, even though the 5G specifications explicitly mention that flows may have different priorities and should be prioritized accordingly. This is a significant flaw, and very difficult to account for. The most reasonable approach to integrating this is to add it to the traffic shaper. In the experiments performed here, the CAKE traffic shaper was used. It's implementation in the linux kernel does allow for up to 8 different priority 
+"tins" for traffic, however that is not enough for the 5G requirements which allow for more priority levels than just 8. One option, therefore, would be to extend the CAKE implementation in the linux kernel to allow a greater number of priority tins. Alternatively, the a different traffic shaper could be chosen, or developed, which incorporates prioritization as well as fairness and active queue management at the level of individual IP flows.
+
+A more acute issue is that while CAKE performs fair queuing, this is not the same as what a deterministic solution requires. Fair queuing is a good way to ensure that flows are able to experience a fair share of the bandwidth, but in a deterministic network flows should not be sharing the bandwidth equally, different flows will have different demands. In an ideal world flows would be assigned maximum and minimum rates  that they may experience over any given averaging window. These values should then be enforced, thus ensuring that malicious or greedy flows are capped at a certain bandwidth, and flows which have high bandwidth requirements may still receive it. This design could be partially realized using existing solutions,  e.g. by integrating the Hierarchical Token Bucket (HTB) queuing discipline (qdisc), which limits bandwidth. However integrating this qdisc requires filter updates for each new flow. This yields a far more complex architecture, and is the reason why it was not utilized in this implementation.
+
+\subsubsection{Load Balancing}
+
+In instances where more than one path is viable, the algorithm used for path selection does not account for the current load of the paths, nor does it try to perform load balancing when selecting paths. This is because the algorithm attempts to find the minimum weight path. Even in cases where two paths have the same properties and the same weighting, the algorithm does not attempt to shuffle or rotate between them. All flows with similar requirements will wind up on the same path. This can lead to under utilization of other paths and congestion problems on the "primary" path. This could be partially addressed by integrating a degree of random selection for equal paths. However a potentially more interesting approach would be to dynamically update the weights of different paths, based on their current load. This would keep randomness out of the algorithm, for reproducible results, and act as a form of load balancing. However great care would have to be taken with respect to how the weights are adjusted, so that paths are still appropriately weighted relative to each other. i.e. a path which is deemed twice as expensive as another path should not have more than half as much traffic as the other path, for flows which could go be forwarded on either path.
+
+
+%%=========================================
+\subsection{Implications and Further Areas of Research}
 
 The results obtained here imply the presented approach is worthy of further investigation, however only in conjunction with some of the presented improvements. The implementation provided by this thesis cannot achieve determinism without certain adjustments, but nor can it be concluded that it will be definitively unable to do so.
 
