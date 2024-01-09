@@ -5,11 +5,13 @@
 \chapter{GTP Patch for the BPF Flow Dissector}
 \label{appendix:patch}
 
-As was mentioned in the "Approach" chapter (\ref{cha:approach}), in a real 5G Campus deployment the messages between either the RAN nodes- or the UPF- and the WAN Connector will be carrying GTP packets. In order for the tc-cake traffic shaper in the linux kernel to be able to detect the packets being tunneled, a custom BPF flow dissector must be used \footnote{https://www.kernel.org/doc/html/v5.1/networking/bpf\_flow\_dissector.html\#overview}.
+As was mentioned in the "Design" chapter (\ref{cha:design}), in a real 5G Campus deployment the messages between the UPF (or RAN) and the WAN Connector will be carrying GTP packets. Because GTP encapsulates messages inside a UDP message, the linux kernel will think that all GTP belong to the same flow, when in actuality they may be tunneling multiple different flows. In order for the tc-cake traffic shaper in the linux kernel to be able to detect the packets being tunneled, a custom BPF flow dissector must be used \footnote{https://www.kernel.org/doc/html/v5.1/networking/bpf\_flow\_dissector.html\#overview}.
 
-The linux kernel's source code provides a simple example of a dissector which removes the tunnel headers for various protocols, e.g. Generic Routing Encapsulation (GRE) or IP in IP tunneling (IPIP). Unfortunately a GTP dissector is not included in this set, but it is a straightforward patch to add the required functionality to the kernel.
+The linux kernel's source code provides a simple example of a dissector which removes the tunnel headers for various protocols, e.g. Generic Routing Encapsulation (GRE) or IP in IP tunneling (IPIP). Unfortunately a GTP dissector is not included in this set, but it is a straightforward patch to add it.
 
-The listing \ref{lst:patch} shows a patch for the example file included in the linux kernel \footnote{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/testing/selftests/bpf/progs/bpf\_flow.c?h=3006adf3be79cde4d14b1800b963b82b6e5572e0}. This patch constitutes an important part of this thesis' contribution because without it, a realistic deployment of the proposed system would not be possible, because the traffic shaper would not function.
+The listing \ref{lst:patch} shows a patch for the example file included in the linux kernel \footnote{https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/testing/selftests/bpf/progs/bpf\_flow.c}, the patch is for commit 3006adf3be79cde4d14b1800b963b82b6e5572e0 on the linux master branch. This patch constitutes an important part of this thesis' contribution because without it, a realistic deployment of the proposed system would not be possible, because the traffic shaper would not be able to peek inside the GTP tunnel.
+
+After the patch has been applied, the resulting program can be compiled into an eBPF program and loaded into the kernel. Then the tc-cake traffic shaper will be able to detect the flows being tunneled inside of GTP.
 
 \clearpage
 
